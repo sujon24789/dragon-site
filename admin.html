@@ -14,18 +14,14 @@
         input, textarea { background: #0f172a; color: #fff; border: 1px solid #475569; }
         button { background: #0284c7; color: white; font-weight: bold; cursor: pointer; }
         button:hover { background: #0369a1; }
-        .btn-approve { background: #16a34a; width: auto; padding: 5px 15px; }
-        .btn-reject { background: #dc2626; width: auto; padding: 5px 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
-        th { background: #0f172a; color: #38bdf8; }
         #adminDashboard { display: none; }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <!-- Login Form -->
     <div id="loginBox" class="card">
         <h2>Admin Login</h2>
         <input type="password" id="adminPass" placeholder="Enter Admin Password">
@@ -33,47 +29,31 @@
         <p id="errMsg" style="color: #ef4444; display:none; margin-top:5px;">ভুল পাসওয়ার্ড!</p>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="adminDashboard">
         <h1>Dragon Network Admin Panel</h1>
 
-        <!-- Notice Board -->
         <div class="card">
             <h2>📢 Update Live Notice</h2>
             <textarea id="noticeInput" rows="3" placeholder="Enter notice for users..."></textarea>
             <button onclick="updateNotice()">Post Notice</button>
         </div>
-
-        <!-- Withdraw Requests -->
-        <div class="card">
-            <h2>💸 Pending Withdraw Requests</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Method</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="withdrawList">
-                    <tr>
-                        <td>#84920</td>
-                        <td>bKash</td>
-                        <td>500 BDT</td>
-                        <td>
-                            <button class="btn-approve" onclick="alert('Approved!')">Approve</button>
-                            <button class="btn-reject" onclick="alert('Rejected!')">Reject</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 </div>
 
 <script>
-    // ডিফল্ট পাসওয়ার্ড: admin123
+    const firebaseConfig = {
+      apiKey: "AIzaSyADJG4lXeMOJqbm11q5dG9KI3IxcpoXUs0",
+      authDomain: "dragon-network-db5ba.firebaseapp.com",
+      projectId: "dragon-network-db5ba",
+      storageBucket: "dragon-network-db5ba.firebasestorage.app",
+      messagingSenderId: "186488018721",
+      appId: "1:186488018721:web:a8a5a85c51ede7b4be1060",
+      databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     function login() {
         const pass = document.getElementById('adminPass').value;
         if(pass === 'admin123') {
@@ -85,10 +65,12 @@
     }
 
     function updateNotice() {
-        const notice = document.getElementById('noticeInput').value;
-        if(notice) {
-            alert('Notice Updated: ' + notice);
-            document.getElementById('noticeInput').value = '';
+        const noticeText = document.getElementById('noticeInput').value;
+        if(noticeText) {
+            database.ref('site/notice').set(noticeText).then(() => {
+                alert('Notice Live Updated Successfully!');
+                document.getElementById('noticeInput').value = '';
+            }).catch(err => alert('Error: ' + err.message));
         }
     }
 </script>
