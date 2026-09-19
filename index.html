@@ -30,12 +30,21 @@
         .balance-card span { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px; }
         .balance-card h3 { font-size: 18px; color: #38bdf8; }
 
-        /* Quick Action Menu */
-        .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .action-item { background: #1e293b; border: 1px solid #334155; padding: 12px 5px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        /* Top Action Quick Menu (4 Main Buttons + 1 More Button) */
+        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .action-item { background: #1e293b; border: 1px solid #334155; padding: 12px 4px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
         .action-item:hover { border-color: #38bdf8; }
-        .action-item i { font-size: 20px; color: #38bdf8; display: block; margin-bottom: 6px; }
-        .action-item span { font-size: 11px; color: #f8fafc; font-weight: 600; }
+        .action-item i { font-size: 18px; color: #38bdf8; display: block; margin-bottom: 5px; }
+        .action-item span { font-size: 10px; color: #f8fafc; font-weight: 600; word-break: break-word; }
+
+        /* Modal Overlay for "More" Menu */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.3s ease; }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal-content { background: #1e293b; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; border-top: 2px solid #38bdf8; transform: translateY(100%); transition: 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-header h3 { font-size: 16px; color: #38bdf8; }
+        .close-btn { font-size: 20px; color: #94a3b8; cursor: pointer; }
 
         /* Content Cards */
         .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 15px; }
@@ -137,7 +146,7 @@
             </div>
         </div>
 
-        <!-- Action Quick Menu -->
+        <!-- Main Action Bar (4 Quick Buttons + More Button) -->
         <div class="action-grid">
             <div class="action-item" onclick="showSection('activateSection')">
                 <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i>
@@ -151,17 +160,45 @@
                 <i class="fa-solid fa-money-bill-transfer" style="color:#10b981;"></i>
                 <span>Withdraw</span>
             </div>
-            <div class="action-item" onclick="showSection('referSection')">
-                <i class="fa-solid fa-users" style="color:#a855f7;"></i>
-                <span>10-Gen Refer</span>
+            <div class="action-item" onclick="toggleMoreMenu()">
+                <i class="fa-solid fa-ellipsis-vertical" style="color:#a855f7;"></i>
+                <span>More</span>
             </div>
-            <div class="action-item" onclick="showSection('profileSection')">
-                <i class="fa-solid fa-user" style="color:#ec4899;"></i>
-                <span>Profile</span>
-            </div>
-            <div class="action-item" onclick="showSection('jobPostSection')">
-                <i class="fa-solid fa-folder-plus" style="color:#06b6d4;"></i>
-                <span>Add Job Post</span>
+        </div>
+
+        <!-- Slide Up Popup Modal for "More" Menu Options -->
+        <div id="moreModal" class="modal-overlay" onclick="toggleMoreMenu()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>All Services & Options</h3>
+                    <span class="close-btn" onclick="toggleMoreMenu()">&times;</span>
+                </div>
+                <div class="action-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="action-item" onclick="showSection('activateSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i>
+                        <span>Activate ID</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('depositSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-wallet" style="color:#38bdf8;"></i>
+                        <span>Deposit</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('withdrawSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-money-bill-transfer" style="color:#10b981;"></i>
+                        <span>Withdraw</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('referSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-users" style="color:#a855f7;"></i>
+                        <span>10-Gen Refer</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('profileSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-user" style="color:#ec4899;"></i>
+                        <span>Profile</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('jobPostSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-folder-plus" style="color:#06b6d4;"></i>
+                        <span>Add Job Post</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -170,7 +207,7 @@
         <!-- Home / Tasks Section -->
         <div id="homeSection">
             
-            <!-- SECTION 1: SEPARATE GOOGLE REVIEWS CARD -->
+            <!-- Google Reviews Section -->
             <div class="card">
                 <div class="card-title"><i class="fa-brands fa-google" style="color:#ea4335;"></i> Google Review Tasks</div>
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Give 5-Star reviews on Google Maps and submit proof URL to earn USDT.</p>
@@ -185,7 +222,7 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: SEPARATE MICRO JOBS CARD -->
+            <!-- Micro Jobs Section -->
             <div class="card">
                 <div class="card-title"><i class="fa-solid fa-list-check" style="color:#38bdf8;"></i> Micro Jobs Tasks</div>
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete simple online tasks like Telegram joining, social media likes, or app reviews.</p>
@@ -200,7 +237,7 @@
                 </div>
             </div>
 
-            <!-- Free Extra Income VIP Telegram Group (Locked for Inactive IDs) -->
+            <!-- VIP Income Channel (Locked for Inactive IDs) -->
             <div class="card" id="vipIncomeCard">
                 <div class="card-title"><i class="fa-solid fa-rocket" style="color:#f59e0b;"></i> VIP High Income Channel</div>
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Join our VIP Telegram list after account activation to unlock extra free income channels:</p>
@@ -226,7 +263,7 @@
             </div>
         </div>
 
-        <!-- Add Job Post / Micro Job Section -->
+        <!-- Add Job Post Section -->
         <div id="jobPostSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-plus-circle" style="color:#06b6d4;"></i> Create Micro Job / Review Request</div>
             <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job/review request to admin to get workers for your tasks.</p>
@@ -397,6 +434,11 @@
             bannerBox.style.display = 'none';
         }
     });
+
+    function toggleMoreMenu() {
+        const modal = document.getElementById('moreModal');
+        modal.classList.toggle('active');
+    }
 
     function switchTab(type) {
         if(type === 'login') {
