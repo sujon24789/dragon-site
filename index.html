@@ -17,6 +17,7 @@
         .user-info p { font-size: 12px; color: #94a3b8; }
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .status-active { background: rgba(22, 163, 74, 0.2); color: #4ade80; border: 1px solid #16a34a; }
+        .status-pending { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid #eab308; }
         .status-inactive { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #dc2626; }
 
         /* Balance Grid */
@@ -59,6 +60,9 @@
         .wallet-address-box { background: #0f172a; border: 1px dashed #0284c7; padding: 10px; border-radius: 8px; font-size: 12px; word-break: break-all; color: #38bdf8; text-align: center; margin: 10px 0; }
         .level-list { font-size: 12px; color: #94a3b8; margin-top: 8px; }
         .level-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #334155; }
+        .info-msg { padding: 10px; border-radius: 8px; font-size: 13px; text-align: center; margin-top: 10px; }
+        .msg-pending { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid #eab308; }
+        .msg-verified { background: rgba(22, 163, 74, 0.15); color: #4ade80; border: 1px solid #16a34a; }
     </style>
 </head>
 <body>
@@ -115,7 +119,7 @@
                     <h3 id="mainBalance">0.00 USDT</h3>
                 </div>
                 <div class="balance-card">
-                    <span>10-Level Ref Income</span>
+                    <span>10-Gen Income</span>
                     <h3 id="refCommission">0.00 USDT</h3>
                 </div>
             </div>
@@ -155,16 +159,27 @@
         <!-- Activate Account Section ($3 USDT) -->
         <div id="activateSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> Activate Account ID ($3 USDT)</div>
-            <p style="font-size:12px; color:#94a3b8;">Send exactly <b>3.00 USDT (BEP20)</b> to the official address below to activate your account and unlock 10-level referral rewards:</p>
             
-            <div class="wallet-address-box">
-                <strong>BEP20 Wallet:</strong><br>
-                <span id="activeAddress">0x1234567890abcdef1234567890abcdef12345678</span>
+            <div id="actFormArea">
+                <p style="font-size:12px; color:#94a3b8;">Send exactly <b>3.00 USDT (BEP20)</b> to the official address below to activate your account and unlock 10-level referral rewards:</p>
+                
+                <div class="wallet-address-box">
+                    <strong>BEP20 Wallet:</strong><br>
+                    <span id="activeAddress">0x1234567890abcdef1234567890abcdef12345678</span>
+                </div>
+
+                <input type="text" id="actTxHash" placeholder="Transaction Hash / TxID">
+                <input type="text" id="actScreenshot" placeholder="Proof Screenshot Link (Imgur / PostImage URL)">
+                <button class="btn-success" onclick="submitActivation()">Submit Activation Request</button>
             </div>
 
-            <input type="text" id="actTxHash" placeholder="Transaction Hash / TxID">
-            <input type="text" id="actScreenshot" placeholder="Proof Screenshot Image Link (Imgur / PostImage URL)">
-            <button class="btn-success" onclick="submitActivation()">Submit Activation Request</button>
+            <div id="actPendingMsg" class="info-msg msg-pending hidden">
+                <i class="fa-solid fa-clock"></i> Your activation request is pending. Please wait for admin approval.
+            </div>
+
+            <div id="actVerifiedMsg" class="info-msg msg-verified hidden">
+                <i class="fa-solid fa-circle-check"></i> Account is Already Verified & Active!
+            </div>
         </div>
 
         <!-- Deposit USDT Section -->
@@ -187,17 +202,23 @@
 
         <!-- Referral & 10 Generation Section -->
         <div id="referSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-users" style="color:#38bdf8;"></i> 10 Generation Referral Program</div>
-            <p style="font-size:12px; color:#94a3b8;">Share your referral link to earn commissions across 10 generations:</p>
+            <div class="card-title"><i class="fa-solid fa-users" style="color:#38bdf8;"></i> 10 Generation Upline Commission</div>
+            <p style="font-size:12px; color:#94a3b8;">Share your referral link to earn 10-level upline commissions:</p>
             <div class="wallet-address-box" id="refLink">Loading referral link...</div>
             
             <div style="margin-top:15px;">
-                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:8px;">Your 10-Generation Structure:</h4>
+                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:8px;">Referral Income Plan:</h4>
                 <div class="level-list">
-                    <div class="level-item"><span>Level 1: Direct Referrals</span><span>5% Bonus</span></div>
-                    <div class="level-item"><span>Level 2</span><span>3% Bonus</span></div>
-                    <div class="level-item"><span>Level 3</span><span>2% Bonus</span></div>
-                    <div class="level-item"><span>Level 4 - 10</span><span>1% Bonus Each</span></div>
+                    <div class="level-item"><span>🔹 Gen 1</span><span>$1.00 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 2</span><span>$0.50 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 3</span><span>$0.30 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 4</span><span>$0.15 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 5</span><span>$0.10 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 6</span><span>$0.10 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 7</span><span>$0.08 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 8</span><span>$0.07 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 9</span><span>$0.05 USDT</span></div>
+                    <div class="level-item"><span>🔹 Gen 10</span><span>$0.05 USDT</span></div>
                 </div>
             </div>
         </div>
@@ -242,6 +263,21 @@
     const database = firebase.database();
 
     let currentUser = null;
+
+    // Auto Login Session check on Reload
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedPhone = localStorage.getItem('dragon_user_phone');
+        if (savedPhone) {
+            database.ref('users/' + savedPhone).once('value').then((snapshot) => {
+                if(snapshot.exists()) {
+                    currentUser = snapshot.val();
+                    showDashboard();
+                } else {
+                    localStorage.removeItem('dragon_user_phone');
+                }
+            });
+        }
+    });
 
     // Load Live Notice
     database.ref('site/notice').on('value', (snapshot) => {
@@ -308,6 +344,7 @@
         database.ref('users/' + phone).once('value').then((snapshot) => {
             if(snapshot.exists() && snapshot.val().pass === pass) {
                 currentUser = snapshot.val();
+                localStorage.setItem('dragon_user_phone', phone);
                 showDashboard();
             } else {
                 alert('Invalid phone or password!');
@@ -322,6 +359,16 @@
         document.getElementById('userDashboard').classList.remove('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
 
+        // Realtime User Data Listener
+        database.ref('users/' + currentUser.phone).on('value', (snapshot) => {
+            if(snapshot.exists()) {
+                currentUser = snapshot.val();
+                updateUI();
+            }
+        });
+    }
+
+    function updateUI() {
         document.getElementById('dashName').innerText = currentUser.name;
         document.getElementById('dashPhone').innerText = currentUser.phone;
         document.getElementById('mainBalance').innerText = (currentUser.balance || 0).toFixed(2) + ' USDT';
@@ -329,10 +376,29 @@
         document.getElementById('refLink').innerText = 'https://sujon24789.github.io/dragon-site/?ref=' + currentUser.phone;
 
         const statusElem = document.getElementById('accountStatus');
-        statusElem.innerText = currentUser.status || 'INACTIVE';
-        statusElem.className = 'status-badge ' + (currentUser.status === 'ACTIVE' ? 'status-active' : 'status-inactive');
+        const actForm = document.getElementById('actFormArea');
+        const actPending = document.getElementById('actPendingMsg');
+        const actVerified = document.getElementById('actVerifiedMsg');
 
-        showSection('homeSection');
+        if(currentUser.status === 'ACTIVE') {
+            statusElem.innerText = 'VERIFIED';
+            statusElem.className = 'status-badge status-active';
+            actForm.classList.add('hidden');
+            actPending.classList.add('hidden');
+            actVerified.classList.remove('hidden');
+        } else if(currentUser.status === 'PENDING') {
+            statusElem.innerText = 'PENDING';
+            statusElem.className = 'status-badge status-pending';
+            actForm.classList.add('hidden');
+            actPending.classList.remove('hidden');
+            actVerified.classList.add('hidden');
+        } else {
+            statusElem.innerText = 'INACTIVE';
+            statusElem.className = 'status-badge status-inactive';
+            actForm.classList.remove('hidden');
+            actPending.classList.add('hidden');
+            actVerified.classList.add('hidden');
+        }
     }
 
     function showSection(sectionId) {
@@ -351,18 +417,29 @@
     }
 
     function submitActivation() {
+        if(currentUser.status === 'PENDING') {
+            return alert('Your activation request is already pending!');
+        }
+        if(currentUser.status === 'ACTIVE') {
+            return alert('Your ID is already verified and active!');
+        }
+
         const tx = document.getElementById('actTxHash').value.trim();
         const ss = document.getElementById('actScreenshot').value.trim();
 
         if(!tx) return alert('Please enter the Transaction Hash (TxID)!');
 
+        // Change user status to PENDING
+        database.ref('users/' + currentUser.phone + '/status').set('PENDING');
+
         database.ref('requests').push({
             type: 'ID_Activation',
+            phone: currentUser.phone,
             username: currentUser.name + " (" + currentUser.phone + ")",
             details: `Amount: $3 USDT (BEP20) | TxID: ${tx} | Proof URL: ${ss || 'N/A'}`,
             timestamp: Date.now()
         }).then(() => {
-            alert('Account Activation Request submitted! Admin will verify and activate your ID.');
+            alert('Account Activation Request submitted! ID status is now PENDING.');
             document.getElementById('actTxHash').value = '';
             document.getElementById('actScreenshot').value = '';
         });
@@ -425,6 +502,7 @@
     }
 
     function logout() {
+        localStorage.removeItem('dragon_user_phone');
         currentUser = null;
         document.getElementById('userDashboard').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
