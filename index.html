@@ -10,6 +10,10 @@
         body { background-color: #0b0f19; color: #f8fafc; padding-bottom: 80px; }
         .container { max-width: 500px; margin: auto; padding: 15px; }
         
+        /* Banner Graphics */
+        .admin-banner-box { width: 100%; height: 160px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #1e293b; display: none; border: 1px solid #334155; }
+        .admin-banner-box img { width: 100%; height: 100%; object-fit: cover; }
+
         /* Header & Profile */
         .app-header { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .user-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -46,6 +50,7 @@
         .btn-success { background: #16a34a; }
         .btn-success:hover { background: #15803d; }
         .btn-danger { background: #dc2626; }
+        .btn-tg { background: #0088cc; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: white; font-weight: 600; border-radius: 8px; padding: 12px; margin-top: 8px; text-align: center; }
 
         /* Notice Box */
         .notice-box { background: rgba(2, 132, 199, 0.15); border: 1px solid #0284c7; color: #38bdf8; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; }
@@ -63,6 +68,7 @@
         .info-msg { padding: 10px; border-radius: 8px; font-size: 13px; text-align: center; margin-top: 10px; }
         .msg-pending { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid #eab308; }
         .msg-verified { background: rgba(22, 163, 74, 0.15); color: #4ade80; border: 1px solid #16a34a; }
+        .locked-card { opacity: 0.6; pointer-events: none; border: 1px solid #dc2626 !important; }
     </style>
 </head>
 <body>
@@ -70,6 +76,11 @@
 <div class="container">
     <div style="text-align:center; margin-bottom:15px;">
         <h2 style="color:#38bdf8;">🐲 DRAGON NETWORK</h2>
+    </div>
+
+    <!-- Admin Graphics Banner -->
+    <div id="adminBannerBox" class="admin-banner-box">
+        <img id="adminBannerImg" src="" alt="Dragon Banner">
     </div>
 
     <!-- Announcement Notice -->
@@ -154,6 +165,20 @@
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:12px;">Complete tasks to earn daily USDT rewards.</p>
                 <button class="btn-success" onclick="startTask()">Start Tasks</button>
             </div>
+
+            <!-- Free Extra Income VIP Telegram Group (Locked for Inactive IDs) -->
+            <div class="card" id="vipIncomeCard">
+                <div class="card-title"><i class="fa-solid fa-rocket" style="color:#f59e0b;"></i> VIP High Income Channel</div>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">আইডি অ্যাক্টিভ হওয়ার পর ফ্রীতে অতিরিক্ত ইনকাম পাওয়ার জন্য আমাদের ভিআইপি টেলিগ্রাম লিস্টে যুক্ত হতে পারবেন:</p>
+                
+                <div id="vipLockedMsg" style="color:#f87171; font-size:12px; text-align:center; font-weight:bold; margin-bottom:8px;">
+                    <i class="fa-solid fa-lock"></i> এই চ্যানেলটি শুধুমাত্র অ্যাক্টিভ মেম্বারদের জন্য আনলক হবে।
+                </div>
+
+                <a id="vipTgLink" href="https://t.me/addlist/1nxTqgTvDIcxYzA1" target="_blank" class="btn-tg hidden" style="background:linear-gradient(135deg, #16a34a, #15803d); width:100%;">
+                    <i class="fa-brands fa-telegram"></i> Join VIP High Income Channel
+                </a>
+            </div>
         </div>
 
         <!-- Activate Account Section ($3 USDT) -->
@@ -226,8 +251,17 @@
         <!-- Support Section -->
         <div id="supportSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-headset" style="color:#38bdf8;"></i> Customer Support</div>
-            <textarea id="userMsg" rows="3" placeholder="Write your issue or details..."></textarea>
-            <button onclick="sendSupportMsg()">Send Message</button>
+            
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">আইডি অ্যাক্টিভ করার আগে যেকোনো তথ্যের জন্য আমাদের ফ্রি সাপোর্ট চ্যানেলে যুক্ত হন:</p>
+            <a href="https://t.me/addlist/Pmu2HXBlfidiM2Q1" target="_blank" class="btn-tg" style="width:100%;">
+                <i class="fa-brands fa-telegram"></i> Free Pre-Activation Support Channel
+            </a>
+
+            <div style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:8px;">অথবা অ্যাডমিনকে সরাসরি মেসেজ দিন:</p>
+                <textarea id="userMsg" rows="3" placeholder="Write your issue or details..."></textarea>
+                <button onclick="sendSupportMsg()">Send Message</button>
+            </div>
         </div>
 
         <button class="btn-danger" onclick="logout()" style="margin-top:15px;">Sign Out</button>
@@ -279,10 +313,21 @@
         }
     });
 
-    // Load Live Notice
+    // Load Live Notice & Admin Banner
     database.ref('site/notice').on('value', (snapshot) => {
         if(snapshot.val()) {
             document.getElementById('liveNotice').innerText = snapshot.val();
+        }
+    });
+
+    database.ref('site/bannerUrl').on('value', (snapshot) => {
+        const bannerBox = document.getElementById('adminBannerBox');
+        const bannerImg = document.getElementById('adminBannerImg');
+        if(snapshot.val()) {
+            bannerImg.src = snapshot.val();
+            bannerBox.style.display = 'block';
+        } else {
+            bannerBox.style.display = 'none';
         }
     });
 
@@ -380,24 +425,43 @@
         const actPending = document.getElementById('actPendingMsg');
         const actVerified = document.getElementById('actVerifiedMsg');
 
+        const vipCard = document.getElementById('vipIncomeCard');
+        const vipLockedMsg = document.getElementById('vipLockedMsg');
+        const vipTgLink = document.getElementById('vipTgLink');
+
         if(currentUser.status === 'ACTIVE') {
             statusElem.innerText = 'VERIFIED';
             statusElem.className = 'status-badge status-active';
             actForm.classList.add('hidden');
             actPending.classList.add('hidden');
             actVerified.classList.remove('hidden');
+
+            // VIP Telegram Unlock
+            vipCard.classList.remove('locked-card');
+            vipLockedMsg.classList.add('hidden');
+            vipTgLink.classList.remove('hidden');
         } else if(currentUser.status === 'PENDING') {
             statusElem.innerText = 'PENDING';
             statusElem.className = 'status-badge status-pending';
             actForm.classList.add('hidden');
             actPending.classList.remove('hidden');
             actVerified.classList.add('hidden');
+
+            // VIP Telegram Lock
+            vipCard.classList.add('locked-card');
+            vipLockedMsg.classList.remove('hidden');
+            vipTgLink.classList.add('hidden');
         } else {
             statusElem.innerText = 'INACTIVE';
             statusElem.className = 'status-badge status-inactive';
             actForm.classList.remove('hidden');
             actPending.classList.add('hidden');
             actVerified.classList.add('hidden');
+
+            // VIP Telegram Lock
+            vipCard.classList.add('locked-card');
+            vipLockedMsg.classList.remove('hidden');
+            vipTgLink.classList.add('hidden');
         }
     }
 
