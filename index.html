@@ -163,12 +163,12 @@
         <div id="homeSection">
             <div class="card">
                 <div class="card-title"><i class="fa-solid fa-briefcase" style="color:#38bdf8;"></i> Micro Jobs & Google Review</div>
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Google Review এবং বিভিন্ন মাইক্রোজব সম্পন্ন করে প্রতিদিন সরাসরি USDT ইনকাম করুন।</p>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete micro jobs & Google Reviews to earn daily USDT rewards.</p>
                 
                 <!-- Google Review Job Card -->
                 <div class="job-card">
                     <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-brands fa-google"></i> Google Map 5-Star Review Task</h4>
-                    <p style="font-size:11px; color:#94a3b8;">নিচের লিংকে গিয়ে ৫-স্টার রিভিও দিন এবং স্ক্রিনশট ইউআরএল জমা দিন।</p>
+                    <p style="font-size:11px; color:#94a3b8;">Give 5-star review on the provided link and submit screenshot URL.</p>
                     <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.20 USDT</p>
                     
                     <input type="text" id="jobProof" placeholder="Enter Review Screenshot Link (Imgur/PostImage)">
@@ -179,10 +179,10 @@
             <!-- Free Extra Income VIP Telegram Group (Locked for Inactive IDs) -->
             <div class="card" id="vipIncomeCard">
                 <div class="card-title"><i class="fa-solid fa-rocket" style="color:#f59e0b;"></i> VIP High Income Channel</div>
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">আইডি অ্যাক্টিভ হওয়ার পর ফ্রীতে অতিরিক্ত ইনকাম পাওয়ার জন্য আমাদের ভিআইপি টেলিগ্রাম লিস্টে যুক্ত হতে পারবেন:</p>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Join our VIP Telegram list after account activation to unlock extra free income channels:</p>
                 
                 <div id="vipLockedMsg" style="color:#f87171; font-size:12px; text-align:center; font-weight:bold; margin-bottom:8px;">
-                    <i class="fa-solid fa-lock"></i> এই চ্যানেলটি শুধুমাত্র অ্যাক্টিভ মেম্বারদের জন্য আনলক হবে।
+                    <i class="fa-solid fa-lock"></i> This channel unlocks only for active verified members.
                 </div>
 
                 <a id="vipTgLink" href="https://t.me/addlist/1nxTqgTvDIcxYzA1" target="_blank" class="btn-tg hidden" style="background:linear-gradient(135deg, #16a34a, #15803d); width:100%;">
@@ -231,11 +231,17 @@
         <div id="withdrawSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-money-bill-transfer" style="color:#38bdf8;"></i> Withdraw USDT (BEP20)</div>
             
-            <p style="font-size:11px; color:#f87171; margin-bottom:10px;">* নোট: উইথড্র করার জন্য আপনার আইডি অবশ্যই ACTIVE থাকতে হবে এবং পর্যাপ্ত ব্যালেন্স থাকতে হবে।</p>
+            <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">* Note: Your account must be ACTIVE and have sufficient balance to request withdrawals.</p>
 
-            <input type="number" id="withAmount" placeholder="Amount (USDT)">
-            <input type="text" id="withAddress" placeholder="Your USDT BEP20 Address">
-            <button class="btn-success" onclick="submitWithdraw()">Request Withdrawal</button>
+            <div id="withFormArea">
+                <input type="number" id="withAmount" placeholder="Amount (USDT)">
+                <input type="text" id="withAddress" placeholder="Your USDT BEP20 Address">
+                <button class="btn-success" onclick="submitWithdraw()">Request Withdrawal</button>
+            </div>
+
+            <div id="withPendingMsg" class="info-msg msg-pending hidden">
+                <i class="fa-solid fa-clock"></i> You have a pending withdrawal request. Please wait for admin processing before submitting another request.
+            </div>
         </div>
 
         <!-- Referral & 10 Generation Section -->
@@ -265,13 +271,13 @@
         <div id="supportSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-headset" style="color:#38bdf8;"></i> Customer Support</div>
             
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">আইডি অ্যাক্টিভ করার আগে যেকোনো তথ্যের জন্য আমাদের ফ্রি সাপোর্ট চ্যানেলে যুক্ত হন:</p>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">For pre-activation queries or support, join our public channel:</p>
             <a href="https://t.me/addlist/Pmu2HXBlfidiM2Q1" target="_blank" class="btn-tg" style="width:100%;">
                 <i class="fa-brands fa-telegram"></i> Free Pre-Activation Support Channel
             </a>
 
             <div style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:8px;">অথবা অ্যাডমিনকে সরাসরি মেসেজ দিন:</p>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:8px;">Or send a direct message to admin:</p>
                 <textarea id="userMsg" rows="3" placeholder="Write your issue or details..."></textarea>
                 <button onclick="sendSupportMsg()">Send Message</button>
             </div>
@@ -424,6 +430,28 @@
                 updateUI();
             }
         });
+
+        // Listen for Pending Withdrawal Status
+        database.ref('requests').orderByChild('phone').equalTo(currentUser.phone).on('value', (snapshot) => {
+            let hasPendingWithdrawal = false;
+            snapshot.forEach(child => {
+                const req = child.val();
+                if(req.type === 'Withdraw' && req.status === 'PENDING') {
+                    hasPendingWithdrawal = true;
+                }
+            });
+
+            const withForm = document.getElementById('withFormArea');
+            const withPending = document.getElementById('withPendingMsg');
+
+            if(hasPendingWithdrawal) {
+                withForm.classList.add('hidden');
+                withPending.classList.remove('hidden');
+            } else {
+                withForm.classList.remove('hidden');
+                withPending.classList.add('hidden');
+            }
+        });
     }
 
     function updateUI() {
@@ -449,7 +477,6 @@
             actPending.classList.add('hidden');
             actVerified.classList.remove('hidden');
 
-            // VIP Telegram Unlock
             vipCard.classList.remove('locked-card');
             vipLockedMsg.classList.add('hidden');
             vipTgLink.classList.remove('hidden');
@@ -460,7 +487,6 @@
             actPending.classList.remove('hidden');
             actVerified.classList.add('hidden');
 
-            // VIP Telegram Lock
             vipCard.classList.add('locked-card');
             vipLockedMsg.classList.remove('hidden');
             vipTgLink.classList.add('hidden');
@@ -471,7 +497,6 @@
             actPending.classList.add('hidden');
             actVerified.classList.add('hidden');
 
-            // VIP Telegram Lock
             vipCard.classList.add('locked-card');
             vipLockedMsg.classList.remove('hidden');
             vipTgLink.classList.add('hidden');
@@ -506,7 +531,6 @@
 
         if(!tx) return alert('Please enter the Transaction Hash (TxID)!');
 
-        // Change user status to PENDING
         database.ref('users/' + currentUser.phone + '/status').set('PENDING');
 
         database.ref('requests').push({
@@ -539,53 +563,50 @@
         });
     }
 
-    // STRICT WITHDRAWAL VALIDATION
+    // STRICT WITHDRAWAL VALIDATION WITH SINGLE PENDING LIMIT
     function submitWithdraw() {
         const amt = parseFloat(document.getElementById('withAmount').value);
         const addr = document.getElementById('withAddress').value.trim();
 
-        // 1. Check ID Active Status
         if(currentUser.status !== 'ACTIVE') {
-            return alert('❌ আপনার অ্যাকাউন্ট অ্যাক্টিভ নয়! উইথড্র করতে অবশ্যই আইডি অ্যাক্টিভ থাকতে হবে।');
+            return alert('Account is not ACTIVE! ID activation required for withdrawal.');
         }
 
-        // 2. Check Input Validity
         if(!amt || amt <= 0 || !addr) {
-            return alert('❌ সঠিক অ্যামাউন্ট এবং BEP20 অ্যাড্রেস প্রদান করুন!');
+            return alert('Please enter valid amount and BEP20 address!');
         }
 
-        // 3. Check Account Balance Existence
         const currentBalance = parseFloat(currentUser.balance || 0);
         if(currentBalance <= 0) {
-            return alert('❌ আপনার অ্যাকাউন্টে কোনো ব্যালেন্স নেই!');
+            return alert('Your account balance is 0 USDT!');
         }
 
-        // 4. Check If Amount Exceeds Balance
         if(amt > currentBalance) {
-            return alert(`❌ পর্যাপ্ত ব্যালেন্স নেই! আপনার বর্তমান ব্যালেন্স $${currentBalance.toFixed(2)} USDT`);
+            return alert(`Insufficient balance! Your balance is $${currentBalance.toFixed(2)} USDT`);
         }
 
-        // Submit Request if all checks pass
+        // Submit Request with PENDING Status
         database.ref('requests').push({
             type: 'Withdraw',
+            phone: currentUser.phone,
             username: currentUser.name + " (" + currentUser.phone + ")",
             details: `Amount: ${amt} USDT | BEP20 Addr: ${addr}`,
+            status: 'PENDING',
             timestamp: Date.now()
         }).then(() => {
-            alert('✅ Withdrawal request submitted successfully!');
+            alert('Withdrawal request submitted! Please wait for admin approval.');
             document.getElementById('withAmount').value = '';
             document.getElementById('withAddress').value = '';
         });
     }
 
-    // Submit Micro Job Proof (Google Review)
     function submitMicroJob(jobTitle) {
         if(currentUser.status !== 'ACTIVE') {
-            return alert('❌ মাইক্রোজব সম্পন্ন করতে আগে $3 USDT দিয়ে আইডি অ্যাক্টিভ করুন!');
+            return alert('Please activate your ID with $3 USDT to complete micro jobs!');
         }
 
         const proof = document.getElementById('jobProof').value.trim();
-        if(!proof) return alert('প্রুফ এর জন্য রিভিউ এর স্ক্রিনশট লিংক দিন!');
+        if(!proof) return alert('Please enter proof screenshot link!');
 
         database.ref('requests').push({
             type: 'MicroJob_Proof',
@@ -593,7 +614,7 @@
             details: `Job: ${jobTitle} | Proof: ${proof}`,
             timestamp: Date.now()
         }).then(() => {
-            alert('✅ Micro Job Proof Submitted! Admin will review and add reward.');
+            alert('Micro Job Proof Submitted! Admin will verify.');
             document.getElementById('jobProof').value = '';
         });
     }
