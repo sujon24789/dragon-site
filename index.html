@@ -3,212 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Network - User Portal</title>
+    <title>LifeGoodBD Style - Dragon Network</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        h1 { color: #38bdf8; text-align: center; margin-bottom: 20px; }
-        .card { background: #1e293b; padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
-        .notice-box { background: #0284c7; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
-        input, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; font-size: 15px; }
-        input, textarea { background: #0f172a; color: #fff; border: 1px solid #475569; }
-        button { background: #0284c7; color: white; font-weight: bold; cursor: pointer; margin-top: 12px; }
-        button:hover { background: #0369a1; }
-        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-buttons button { margin: 0; background: #334155; }
-        .tab-buttons button.active { background: #0284c7; }
-        .btn-success { background: #16a34a; }
-        .btn-success:hover { background: #15803d; }
-        .hidden { display: none; }
-        .user-info { font-size: 16px; margin-bottom: 10px; line-height: 1.6; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f1f5f9; color: #334155; padding-bottom: 70px; }
+        
+        /* Header */
+        .app-header { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 20px 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+        .user-profile { display: flex; align-items: center; justify-content: space-between; }
+        .user-info h3 { font-size: 18px; color: #38bdf8; }
+        .user-info p { font-size: 12px; color: #94a3b8; }
+        .balance-card { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px; margin-top: 15px; backdrop-filter: blur(5px); display: flex; justify-content: space-between; align-items: center; }
+
+        /* Container */
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+
+        /* Quick Grid */
+        .grid-menu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 15px 0; }
+        .menu-item { background: #fff; padding: 12px 5px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
+        .menu-item i { font-size: 22px; color: #0284c7; margin-bottom: 5px; display: block; }
+        .menu-item span { font-size: 11px; font-weight: 600; color: #475569; }
+
+        /* Cards */
+        .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card-title { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2e8f0; max-width: 500px; margin: auto; }
+        .nav-item { text-align: center; color: #64748b; font-size: 11px; text-decoration: none; }
+        .nav-item i { font-size: 18px; display: block; margin-bottom: 2px; }
+        .nav-item.active { color: #0284c7; font-weight: 700; }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <h1>🐲 Dragon Network</h1>
-
-    <div class="notice-box">
-        <strong>📢 নোটিশ: </strong> <span id="liveNotice">Loading...</span>
-    </div>
-
-    <div id="authBox" class="card">
-        <div class="tab-buttons">
-            <button id="tabLoginBtn" class="active" onclick="switchTab('login')">Login</button>
-            <button id="tabRegBtn" onclick="switchTab('register')">Register</button>
+    <div class="app-header">
+        <div class="user-profile">
+            <div class="user-info">
+                <h3>Dragon Network</h3>
+                <p>Welcome to User Panel</p>
+            </div>
+            <i class="fa-solid fa-bell" style="font-size:20px;"></i>
         </div>
-
-        <div id="loginForm">
-            <h3>একাউন্টে লগইন করুন</h3>
-            <input type="text" id="loginPhone" placeholder="মোবাইল নম্বর (Phone)">
-            <input type="password" id="loginPass" placeholder="পাসওয়ার্ড (Password)">
-            <button onclick="userLogin()">লগইন করুন</button>
-        </div>
-
-        <div id="regForm" class="hidden">
-            <h3>নতুন একাউন্ট খুলুন</h3>
-            <input type="text" id="regName" placeholder="আপনার নাম (Full Name)">
-            <input type="text" id="regPhone" placeholder="মোবাইল নম্বর (Phone)">
-            <input type="password" id="regPass" placeholder="পাসওয়ার্ড (Password)">
-            <button class="btn-success" onclick="userRegister()">রেজিস্ট্রেশন করুন</button>
+        <div class="balance-card">
+            <div>
+                <span style="font-size:12px; opacity:0.8;">Total Balance</span>
+                <h2 style="font-size:22px;">৳ 0.00</h2>
+            </div>
+            <button style="background:#0284c7; border:none; color:#fff; padding:8px 15px; border-radius:8px; font-weight:bold;">Deposit</button>
         </div>
     </div>
 
-    <div id="userDashboard" class="card hidden">
-        <h3>স্বাগতম, <span id="dashName" style="color:#38bdf8;"></span>!</h3>
-        <div class="user-info">
-            <p>📱 ফোন: <span id="dashPhone"></span></p>
-            <p>💰 ব্যালেন্স: <strong>0 BDT</strong></p>
-        </div>
+    <!-- Quick Services Menu -->
+    <div class="grid-menu">
+        <div class="menu-item"><i class="fa-solid fa-wallet"></i><span>Deposit</span></div>
+        <div class="menu-item"><i class="fa-solid fa-money-bill-transfer"></i><span>Withdraw</span></div>
+        <div class="menu-item"><i class="fa-solid fa-users"></i><span>Referral</span></div>
+        <div class="menu-item"><i class="fa-solid fa-headset"></i><span>Support</span></div>
+    </div>
 
-        <hr style="border-color:#334155; margin: 15px 0;">
-
-        <h3>অ্যাডমিনকে রিকোয়েস্ট পাঠান</h3>
-        <textarea id="userMsg" rows="3" placeholder="আপনার রিকোয়েস্ট বা সমস্যার কথা লিখুন..."></textarea>
-        <button class="btn-success" onclick="sendRequest()">রিকোয়েস্ট পাঠান</button>
-        
-        <button style="background:#dc2626; margin-top:20px;" onclick="logout()">লগআউট করুন</button>
+    <!-- Task / Work Section -->
+    <div class="card">
+        <div class="card-title"><i class="fa-solid fa-list-check" style="color:#0284c7;"></i> Daily Work Task</div>
+        <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Complete daily tasks to collect commission.</p>
+        <button style="width:100%; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:bold;">Start Work</button>
     </div>
 </div>
 
-<script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyADJG4lXeMOJqbm11q5dG9KI3IxcpoXUs0",
-      authDomain: "dragon-network-db5ba.firebaseapp.com",
-      projectId: "dragon-network-db5ba",
-      storageBucket: "dragon-network-db5ba.firebasestorage.app",
-      messagingSenderId: "186488018721",
-      appId: "1:186488018721:web:a8a5a85c51ede7b4be1060",
-      databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    let currentUser = null;
-
-    database.ref('site/notice').on('value', (snapshot) => {
-        document.getElementById('liveNotice').innerText = snapshot.val() || 'Dragon Network-এ আপনাকে স্বাগতম!';
-    }, (error) => {
-        console.error("Notice load error:", error);
-    });
-
-    function switchTab(type) {
-        if(type === 'login') {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('regForm').classList.add('hidden');
-            document.getElementById('tabLoginBtn').classList.add('active');
-            document.getElementById('tabRegBtn').classList.remove('active');
-        } else {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('regForm').classList.remove('hidden');
-            document.getElementById('tabLoginBtn').classList.remove('active');
-            document.getElementById('tabRegBtn').classList.add('active');
-        }
-    }
-
-    function userRegister() {
-        const name = document.getElementById('regName').value.trim();
-        const phone = document.getElementById('regPhone').value.trim();
-        const pass = document.getElementById('regPass').value.trim();
-
-        if(!name || !phone || !pass) {
-            alert('সবগুলো ঘর পূরণ করুন!');
-            return;
-        }
-
-        const userRef = database.ref('users/' + phone);
-        userRef.once('value').then((snapshot) => {
-            if(snapshot.exists()) {
-                alert('এই ফোন নম্বরে ইতিপূর্বে অ্যাকাউন্ট খোলা হয়েছে!');
-            } else {
-                userRef.set({
-                    name: name,
-                    phone: phone,
-                    pass: pass,
-                    joinedAt: Date.now()
-                }).then(() => {
-                    database.ref('requests').push({
-                        username: name + " (" + phone + ")",
-                        message: "নতুন অ্যাকাউন্ট রেজিস্টার করেছে",
-                        timestamp: Date.now()
-                    });
-
-                    alert('রেজিস্ট্রেশন সফল হয়েছে! এখন লগইন করুন।');
-                    switchTab('login');
-                    document.getElementById('loginPhone').value = phone;
-                }).catch((err) => {
-                    alert('ডাটা সেভ করতে সমস্যা হচ্ছে: ' + err.message);
-                });
-            }
-        }).catch((err) => {
-            alert('ডাটা পড়তে সমস্যা হচ্ছে: ' + err.message);
-        });
-    }
-
-    function userLogin() {
-        const phone = document.getElementById('loginPhone').value.trim();
-        const pass = document.getElementById('loginPass').value.trim();
-
-        if(!phone || !pass) {
-            alert('ফোন নম্বর এবং পাসওয়ার্ড দিন!');
-            return;
-        }
-
-        database.ref('users/' + phone).once('value').then((snapshot) => {
-            if(snapshot.exists()) {
-                const userData = snapshot.val();
-                if(userData.pass === pass) {
-                    currentUser = userData;
-                    showDashboard();
-                } else {
-                    alert('ভুল পাসওয়ার্ড!');
-                }
-            } else {
-                alert('এই নম্বরে কোনো অ্যাকাউন্ট পাওয়া যায়নি!');
-            }
-        }).catch((err) => {
-            alert('লগইন করতে সমস্যা হচ্ছে: ' + err.message);
-        });
-    }
-
-    function showDashboard() {
-        document.getElementById('authBox').classList.add('hidden');
-        document.getElementById('userDashboard').classList.remove('hidden');
-        document.getElementById('dashName').innerText = currentUser.name;
-        document.getElementById('dashPhone').innerText = currentUser.phone;
-    }
-
-    function sendRequest() {
-        const msg = document.getElementById('userMsg').value.trim();
-        if(!msg) {
-            alert('আপনার মেসেজ লিখুন!');
-            return;
-        }
-
-        database.ref('requests').push({
-            username: currentUser.name + " (" + currentUser.phone + ")",
-            message: msg,
-            timestamp: Date.now()
-        }).then(() => {
-            alert('আপনার রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
-            document.getElementById('userMsg').value = '';
-        }).catch((err) => {
-            alert('রিকোয়েস্ট পাঠাতে সমস্যা হয়েছে: ' + err.message);
-        });
-    }
-
-    function logout() {
-        currentUser = null;
-        document.getElementById('userDashboard').classList.add('hidden');
-        document.getElementById('authBox').classList.remove('hidden');
-        document.getElementById('loginPhone').value = '';
-        document.getElementById('loginPass').value = '';
-    }
-</script>
+<!-- Bottom Navigation Bar -->
+<div class="bottom-nav">
+    <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-briefcase"></i>Tasks</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-user-plus"></i>Refer</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-user"></i>Profile</a>
+</div>
 
 </body>
 </html>
