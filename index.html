@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragon Network - USDT Portal</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0b0f19; color: #f8fafc; padding-bottom: 80px; }
@@ -81,6 +83,8 @@
         .summary-row:last-child { border-bottom: none; }
         .summary-label { color: #94a3b8; }
         .summary-value { font-weight: 600; color: #f8fafc; }
+        .qr-box { text-align: center; margin: 15px 0; background: #fff; padding: 15px; border-radius: 10px; display: inline-block; width: 100%; }
+        .qr-box img { width: 160px; height: 160px; margin: auto; }
     </style>
 </head>
 <body>
@@ -98,6 +102,7 @@
         <i class="fa-solid fa-bullhorn"></i> <span id="liveNotice">Welcome to Dragon Network USDT Portal!</span>
     </div>
 
+    <!-- Auth Box / Login & Register -->
     <div id="authBox" class="card">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <button id="tabLoginBtn" style="background:#0284c7;" onclick="switchTab('login')">Sign In</button>
@@ -119,6 +124,15 @@
             <input type="text" id="regRef" placeholder="Referral Code (Optional)">
             <button class="btn-success" onclick="userRegister()">Register Now</button>
         </div>
+    </div>
+
+    <!-- User 2FA Verification Box (If Enabled) -->
+    <div id="user2FABox" class="card hidden">
+        <div class="card-title"><i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i> Optional 2FA Verification</div>
+        <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Your account has 2FA enabled. Enter the 6-digit Google Authenticator code:</p>
+        <input type="text" id="userOtpInput" placeholder="Enter 6-Digit Code" maxlength="6" style="text-align:center; font-size:18px; letter-spacing:4px;">
+        <button class="btn-success" onclick="verifyUserOTPAndLogin()">Verify & Enter Dashboard</button>
+        <button style="background:#334155; font-size:12px;" onclick="cancelUser2FA()">Back</button>
     </div>
 
     <div id="userDashboard" class="hidden">
@@ -186,7 +200,7 @@
                     </div>
                     <div class="action-item" onclick="showSection('profileSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-user" style="color:#ec4899;"></i>
-                        <span class="btn-label">Profile</span>
+                        <span class="btn-label">Profile & 2FA</span>
                     </div>
                     <div class="action-item" onclick="showSection('jobPostSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-folder-plus" style="color:#06b6d4;"></i>
@@ -242,7 +256,7 @@
 
         <div id="myPostedJobsSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> My Posted Jobs & Proofs</div>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Review worker submissions for your posted jobs and Approve/Reject them.</p>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Review submissions. Unreviewed submissions auto-approve after 72 hours.</p>
 
             <div id="myJobsContainer">
                 <p style="font-size:12px; color:#94a3b8; text-align:center;">Loading your job posts...</p>
@@ -250,12 +264,31 @@
         </div>
 
         <div id="profileSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-id-card" style="color:#ec4899;"></i> User Profile</div>
-            <div style="font-size:13px; color:#94a3b8; line-height:2;">
+            <div class="card-title"><i class="fa-solid fa-id-card" style="color:#ec4899;"></i> User Profile & Optional 2FA</div>
+            <div style="font-size:13px; color:#94a3b8; line-height:2; margin-bottom:15px;">
                 <p><b>Name:</b> <span id="profName" style="color:#fff;">-</span></p>
                 <p><b>Mobile:</b> <span id="profPhone" style="color:#fff;">-</span></p>
                 <p><b>Status:</b> <span id="profStatus" style="color:#fff;">-</span></p>
                 <p><b>Referred By:</b> <span id="profRefBy" style="color:#fff;">-</span></p>
+                <p><b>2FA Status:</b> <span id="prof2FAStatus" style="color:#facc15;">DISABLED</span></p>
+            </div>
+
+            <!-- Optional 2FA Control Area -->
+            <div id="enable2FAContainer">
+                <button class="btn-success" onclick="startEnable2FA()">Enable Google Authenticator 2FA</button>
+            </div>
+
+            <div id="setup2FAStep" class="hidden" style="border-top:1px solid #334155; padding-top:12px;">
+                <p style="font-size:12px; color:#38bdf8; margin-bottom:6px;">Scan QR Code with Google Authenticator:</p>
+                <div class="qr-box">
+                    <div id="userQrcode"></div>
+                </div>
+                <input type="text" id="confirm2FAInput" placeholder="Enter 6-Digit Code to Enable" maxlength="6" style="text-align:center;">
+                <button class="btn-success" onclick="confirmEnable2FA()">Confirm & Turn ON 2FA</button>
+            </div>
+
+            <div id="disable2FAContainer" class="hidden" style="border-top:1px solid #334155; padding-top:12px;">
+                <button class="btn-danger" onclick="disableUser2FA()">Disable Google Authenticator 2FA</button>
             </div>
         </div>
 
@@ -370,22 +403,6 @@
                     </div>
                 </div>
             </div>
-
-            <div style="margin-top:20px; border-top:1px solid #334155; padding-top:12px;">
-                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:8px;">Referral Income Plan:</h4>
-                <div class="level-list">
-                    <div class="level-item"><span>🔹 Gen 1</span><span>$1.00 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 2</span><span>$0.50 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 3</span><span>$0.30 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 4</span><span>$0.15 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 5</span><span>$0.10 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 6</span><span>$0.10 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 7</span><span>$0.08 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 8</span><span>$0.07 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 9</span><span>$0.05 USDT</span></div>
-                    <div class="level-item"><span>🔹 Gen 10</span><span>$0.05 USDT</span></div>
-                </div>
-            </div>
         </div>
 
         <div id="supportSection" class="card hidden">
@@ -433,6 +450,8 @@
     const database = firebase.database();
 
     let currentUser = null;
+    let pendingLoginUser = null;
+    let tempUserSecret = null;
 
     window.addEventListener('DOMContentLoaded', () => {
         const savedPhone = localStorage.getItem('dragon_user_phone');
@@ -500,7 +519,8 @@
                 const userData = {
                     name: name, phone: phone, pass: pass,
                     referredBy: ref || 'Direct', status: 'INACTIVE',
-                    balance: 0.00, commission: 0.00, bonus: 0.00, joinedAt: Date.now()
+                    balance: 0.00, commission: 0.00, bonus: 0.00,
+                    totpSecret: '', twoFactorEnabled: false, joinedAt: Date.now()
                 };
                 userRef.set(userData).then(() => {
                     alert('Registration Successful! Please Sign In.');
@@ -519,13 +539,119 @@
 
         database.ref('users/' + phone).once('value').then((snapshot) => {
             if(snapshot.exists() && snapshot.val().pass === pass) {
-                currentUser = snapshot.val();
-                localStorage.setItem('dragon_user_phone', phone);
-                showDashboard();
+                const u = snapshot.val();
+                pendingLoginUser = u;
+
+                // Check if user has optional 2FA enabled
+                if(u.twoFactorEnabled && u.totpSecret) {
+                    document.getElementById('authBox').classList.add('hidden');
+                    document.getElementById('user2FABox').classList.remove('hidden');
+                } else {
+                    currentUser = u;
+                    localStorage.setItem('dragon_user_phone', phone);
+                    showDashboard();
+                }
             } else {
                 alert('Invalid phone or password!');
             }
         });
+    }
+
+    function verifyUserOTPAndLogin() {
+        const token = document.getElementById('userOtpInput').value.trim();
+        if(!pendingLoginUser || !pendingLoginUser.totpSecret) return;
+
+        let totp = new OTPAuth.TOTP({
+            issuer: "DragonNetwork",
+            label: pendingLoginUser.phone,
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: pendingLoginUser.totpSecret
+        });
+
+        let delta = totp.validate({ token: token, window: 1 });
+        if(delta !== null) {
+            currentUser = pendingLoginUser;
+            localStorage.setItem('dragon_user_phone', currentUser.phone);
+            document.getElementById('user2FABox').classList.add('hidden');
+            showDashboard();
+        } else {
+            alert('Invalid 2FA Code!');
+        }
+    }
+
+    function cancelUser2FA() {
+        document.getElementById('user2FABox').classList.add('hidden');
+        document.getElementById('authBox').classList.remove('hidden');
+        pendingLoginUser = null;
+    }
+
+    // Optional 2FA setup inside Profile
+    function startEnable2FA() {
+        let secret = new OTPAuth.Secret({ size: 20 });
+        tempUserSecret = secret.base32;
+
+        document.getElementById('userQrcode').innerHTML = "";
+        let totp = new OTPAuth.TOTP({
+            issuer: "DragonNetwork",
+            label: currentUser.phone,
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: tempUserSecret
+        });
+
+        new QRCode(document.getElementById("userQrcode"), {
+            text: totp.toString(),
+            width: 160,
+            height: 160
+        });
+
+        document.getElementById('enable2FAContainer').classList.add('hidden');
+        document.getElementById('setup2FAStep').classList.remove('hidden');
+    }
+
+    function confirmEnable2FA() {
+        const token = document.getElementById('confirm2FAInput').value.trim();
+        let totp = new OTPAuth.TOTP({
+            issuer: "DragonNetwork",
+            label: currentUser.phone,
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: tempUserSecret
+        });
+
+        let delta = totp.validate({ token: token, window: 1 });
+        if(delta !== null) {
+            database.ref('users/' + currentUser.phone).update({
+                totpSecret: tempUserSecret,
+                twoFactorEnabled: true
+            }).then(() => {
+                alert('Google Authenticator 2FA Enabled Successfully!');
+                document.getElementById('setup2FAStep').classList.add('hidden');
+                currentUser.twoFactorEnabled = true;
+                currentUser.totpSecret = tempUserSecret;
+                updateUI();
+            });
+        } else {
+            alert('Invalid Code! Try again.');
+        }
+    }
+
+    function disableUser2FA() {
+        if(confirm('Are you sure you want to disable 2FA?')) {
+            database.ref('users/' + currentUser.phone).update({
+                totpSecret: '',
+                twoFactorEnabled: false
+            }).then(() => {
+                alert('2FA Disabled Successfully.');
+                currentUser.twoFactorEnabled = false;
+                currentUser.totpSecret = '';
+                updateUI();
+            });
+        }
     }
 
     function showDashboard() {
@@ -557,6 +683,23 @@
         document.getElementById('profPhone').innerText = currentUser.phone;
         document.getElementById('profStatus').innerText = currentUser.status;
         document.getElementById('profRefBy').innerText = currentUser.referredBy || 'Direct';
+
+        const status2FA = document.getElementById('prof2FAStatus');
+        const enableContainer = document.getElementById('enable2FAContainer');
+        const disableContainer = document.getElementById('disable2FAContainer');
+
+        if(currentUser.twoFactorEnabled) {
+            status2FA.innerText = 'ENABLED';
+            status2FA.style.color = '#4ade80';
+            enableContainer.classList.add('hidden');
+            disableContainer.classList.remove('hidden');
+            document.getElementById('setup2FAStep').classList.add('hidden');
+        } else {
+            status2FA.innerText = 'DISABLED';
+            status2FA.style.color = '#facc15';
+            enableContainer.classList.remove('hidden');
+            disableContainer.classList.add('hidden');
+        }
 
         const statusElem = document.getElementById('accountStatus');
         const actForm = document.getElementById('actFormArea');
@@ -744,14 +887,14 @@
                 title: title,
                 link: link,
                 workers: workers,
-                completedCount: 0,
+                activeSlots: workers,
                 reward: reward,
                 totalCost: totalCost,
                 instruction: instruction || 'N/A',
-                status: 'PENDING',
+                status: 'APPROVED',
                 createdAt: Date.now()
             }).then(() => {
-                alert(`Job submitted successfully! $${totalCost.toFixed(3)} USDT deducted from your balance. Waiting for admin approval.`);
+                alert(`Job submitted successfully! $${totalCost.toFixed(3)} USDT deducted from your balance.`);
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postLink').value = '';
                 document.getElementById('postWorkers').value = '';
@@ -778,8 +921,7 @@
 
             snapshot.forEach(child => {
                 const job = child.val();
-                const completedCount = job.completedCount || 0;
-                const maxWorkers = job.workers || 1;
+                const activeSlots = job.activeSlots !== undefined ? job.activeSlots : job.workers;
 
                 let alreadyCompleted = false;
                 if(job.proofs) {
@@ -790,7 +932,7 @@
                     });
                 }
 
-                if(completedCount >= maxWorkers || alreadyCompleted || job.creatorPhone === currentUser.phone) {
+                if(activeSlots <= 0 || alreadyCompleted || job.creatorPhone === currentUser.phone) {
                     return;
                 }
 
@@ -800,7 +942,7 @@
                         <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-tasks"></i> ${job.title}</h4>
                         <p style="font-size:11px; color:#94a3b8;">${job.instruction}</p>
                         <p style="font-size:11px; color:#38bdf8; margin-top:4px;"><b>Link:</b> <a href="${job.link}" target="_blank" style="color:#38bdf8;">${job.link}</a></p>
-                        <p style="font-size:11px; color:#facc15; margin-top:2px;">Progress: ${completedCount}/${maxWorkers} Completed</p>
+                        <p style="font-size:11px; color:#facc15; margin-top:2px;">Available Slots: ${activeSlots}</p>
                         <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $${parseFloat(job.reward).toFixed(2)} USDT</p>
                         
                         <input type="text" id="proofText_${job.jobId}" placeholder="Task Text Details / Notes">
@@ -824,11 +966,19 @@
 
         if(!textProof && !imgProof) return alert('Please provide either text details or screenshot link as proof!');
 
-        database.ref(`job_posts/${jobId}/proofs`).once('value').then((snapshot) => {
+        database.ref(`job_posts/${jobId}`).once('value').then((snapshot) => {
+            if(!snapshot.exists()) return alert('Job not found!');
+            const job = snapshot.val();
+            const activeSlots = job.activeSlots !== undefined ? job.activeSlots : job.workers;
+
+            if(activeSlots <= 0) {
+                return alert('Already task complete / slots are full!');
+            }
+
             let alreadySubmitted = false;
-            if(snapshot.exists()) {
-                snapshot.forEach(child => {
-                    if(child.val().workerPhone === currentUser.phone) {
+            if(job.proofs) {
+                Object.values(job.proofs).forEach(p => {
+                    if(p.workerPhone === currentUser.phone) {
                         alreadySubmitted = true;
                     }
                 });
@@ -840,19 +990,21 @@
 
             const proofId = database.ref(`job_posts/${jobId}/proofs`).push().key;
 
-            database.ref(`job_posts/${jobId}/proofs/${proofId}`).set({
-                proofId: proofId,
-                workerPhone: currentUser.phone,
-                workerName: currentUser.name,
-                textProof: textProof || 'N/A',
-                imgProof: imgProof || 'N/A',
-                reward: reward,
-                status: 'PENDING',
-                submittedAt: Date.now()
-            }).then(() => {
-                alert('Job proof submitted successfully! Waiting for creator approval.');
-                document.getElementById(`proofText_${jobId}`).value = '';
-                document.getElementById(`proofImg_${jobId}`).value = '';
+            database.ref(`job_posts/${jobId}/activeSlots`).set(activeSlots - 1).then(() => {
+                database.ref(`job_posts/${jobId}/proofs/${proofId}`).set({
+                    proofId: proofId,
+                    workerPhone: currentUser.phone,
+                    workerName: currentUser.name,
+                    textProof: textProof || 'N/A',
+                    imgProof: imgProof || 'N/A',
+                    reward: reward,
+                    status: 'PENDING',
+                    submittedAt: Date.now()
+                }).then(() => {
+                    alert('Job proof submitted successfully! Waiting for creator approval.');
+                    document.getElementById(`proofText_${jobId}`).value = '';
+                    document.getElementById(`proofImg_${jobId}`).value = '';
+                });
             });
         });
     }
@@ -867,30 +1019,41 @@
                 return;
             }
 
+            const now = Date.now();
+            const SEVENTY_TWO_HOURS = 72 * 60 * 60 * 1000;
+
             snapshot.forEach(child => {
                 const job = child.val();
-                let statusBadge = `<span style="color:#facc15;">[PENDING ADMIN REVIEW]</span>`;
-                if(job.status === 'APPROVED') statusBadge = `<span style="color:#4ade80;">[APPROVED & LIVE] (${job.completedCount || 0}/${job.workers} Done)</span>`;
-                else if(job.status === 'REJECTED') statusBadge = `<span style="color:#f87171;">[REJECTED & REFUNDED]</span>`;
-                else if(job.status === 'COMPLETED') statusBadge = `<span style="color:#38bdf8;">[COMPLETED & REMOVED]</span>`;
+                let statusBadge = `<span style="color:#4ade80;">[APPROVED & LIVE] (Slots left: ${job.activeSlots !== undefined ? job.activeSlots : job.workers})</span>`;
 
                 let proofsHtml = '';
                 if(job.proofs) {
                     Object.values(job.proofs).forEach(p => {
+                        // Check 72 hours auto-approve condition
+                        if(p.status === 'PENDING' && (now - p.submittedAt > SEVENTY_TWO_HOURS)) {
+                            database.ref(`job_posts/${job.jobId}/proofs/${p.proofId}/status`).set('APPROVED');
+                            database.ref(`users/${p.workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(p.reward));
+                            p.status = 'APPROVED (Auto)';
+                        }
+
                         if(p.status === 'PENDING') {
+                            const hoursPassed = ((now - p.submittedAt) / (1000 * 60 * 60)).toFixed(1);
+                            const hoursLeft = Math.max(0, 72 - parseFloat(hoursPassed)).toFixed(1);
+
                             proofsHtml += `
                                 <div class="proof-box">
                                     <p><b>Worker:</b> ${p.workerName} (${p.workerPhone})</p>
                                     <p><b>Text Proof:</b> ${p.textProof}</p>
                                     <p><b>Screenshot:</b> <a href="${p.imgProof}" target="_blank" style="color:#38bdf8;">${p.imgProof}</a></p>
+                                    <p style="font-size:10px; color:#facc15; margin-top:4px;">⏳ Auto-approve in: ${hoursLeft} hours</p>
                                     <div style="display:flex; gap:6px; margin-top:8px;">
                                         <button class="btn-success" style="padding:6px; font-size:11px;" onclick="approveProof('${job.jobId}', '${p.proofId}', '${p.workerPhone}', ${p.reward})">Approve & Pay $${p.reward}</button>
-                                        <button class="btn-danger" style="padding:6px; font-size:11px;" onclick="rejectProof('${job.jobId}', '${p.proofId}')">Reject</button>
+                                        <button class="btn-danger" style="padding:6px; font-size:11px;" onclick="rejectProof('${job.jobId}', '${p.proofId}')">Reject & Restore Slot</button>
                                     </div>
                                 </div>
                             `;
                         } else {
-                            proofsHtml += `<div class="proof-box"><p><b>Worker:</b> ${p.workerName} - Status: <b style="color:${p.status === 'APPROVED' ? '#4ade80':'#f87171'}">${p.status}</b></p></div>`;
+                            proofsHtml += `<div class="proof-box"><p><b>Worker:</b> ${p.workerName} - Status: <b style="color:${p.status.includes('APPROVED') ? '#4ade80':'#f87171'}">${p.status}</b></p></div>`;
                         }
                     });
                 } else {
@@ -910,28 +1073,23 @@
     }
 
     function approveProof(jobId, proofId, workerPhone, reward) {
-        database.ref(`job_posts/${jobId}`).once('value').then((snapshot) => {
-            if(!snapshot.exists()) return;
-            const job = snapshot.val();
-            const currentCompleted = (job.completedCount || 0) + 1;
-            const maxWorkers = job.workers || 1;
-
-            database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
-            
-            let updates = { completedCount: currentCompleted };
-            if(currentCompleted >= maxWorkers) {
-                updates.status = 'COMPLETED';
-            }
-            database.ref(`job_posts/${jobId}`).update(updates);
-
-            database.ref(`users/${workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(reward)).then(() => {
-                alert('Proof Approved! Reward transferred to worker balance.');
-            });
+        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
+        database.ref(`users/${workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(reward)).then(() => {
+            alert('Proof Approved! Reward transferred to worker balance.');
         });
     }
 
     function rejectProof(jobId, proofId) {
-        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('REJECTED').then(() => alert('Proof Rejected.'));
+        database.ref(`job_posts/${jobId}`).once('value').then((snapshot) => {
+            if(!snapshot.exists()) return;
+            const job = snapshot.val();
+            const currentSlots = job.activeSlots !== undefined ? job.activeSlots : 0;
+
+            database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('REJECTED');
+            database.ref(`job_posts/${jobId}/activeSlots`).set(currentSlots + 1).then(() => {
+                alert('Proof Rejected. 1 slot restored back to marketplace!');
+            });
+        });
     }
 
     function submitActivation() {
@@ -979,7 +1137,6 @@
         });
     }
 
-    // Submit Withdrawal with Immediate Balance Deduction
     function submitWithdraw() {
         const amt = parseFloat(document.getElementById('withAmount').value);
         const addr = document.getElementById('withAddress').value.trim();
@@ -991,7 +1148,6 @@
         if(currentBalance <= 0) return alert('Your account balance is 0 USDT!');
         if(amt > currentBalance) return alert(`Insufficient balance! Your balance is $${currentBalance.toFixed(2)} USDT`);
 
-        // Deduct balance immediately upon submitting withdrawal request
         database.ref('users/' + currentUser.phone + '/balance').transaction((curr) => {
             return Math.max(0, (curr || 0) - amt);
         }).then(() => {
