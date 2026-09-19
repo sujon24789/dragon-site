@@ -764,7 +764,6 @@
         });
     }
 
-    // Load Approved Jobs (Hides jobs already completed by user or fully finished)
     function loadApprovedJobs() {
         database.ref('job_posts').orderByChild('status').equalTo('APPROVED').on('value', (snapshot) => {
             const container = document.getElementById('microJobsListContainer');
@@ -782,7 +781,6 @@
                 const completedCount = job.completedCount || 0;
                 const maxWorkers = job.workers || 1;
 
-                // Check if job target completed quota reached or user already completed this job
                 let alreadyCompleted = false;
                 if(job.proofs) {
                     Object.values(job.proofs).forEach(p => {
@@ -792,7 +790,6 @@
                     });
                 }
 
-                // If quota is reached or user already did it, don't show it to this user
                 if(completedCount >= maxWorkers || alreadyCompleted || job.creatorPhone === currentUser.phone) {
                     return;
                 }
@@ -827,7 +824,6 @@
 
         if(!textProof && !imgProof) return alert('Please provide either text details or screenshot link as proof!');
 
-        // Check again if user already submitted proof for this job
         database.ref(`job_posts/${jobId}/proofs`).once('value').then((snapshot) => {
             let alreadySubmitted = false;
             if(snapshot.exists()) {
@@ -913,7 +909,6 @@
         });
     }
 
-    // Creator approves proof, pays worker, updates completed count, and auto removes if quota reached
     function approveProof(jobId, proofId, workerPhone, reward) {
         database.ref(`job_posts/${jobId}`).once('value').then((snapshot) => {
             if(!snapshot.exists()) return;
@@ -923,14 +918,12 @@
 
             database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
             
-            // Increment completed count and check if quota completed
             let updates = { completedCount: currentCompleted };
             if(currentCompleted >= maxWorkers) {
-                updates.status = 'COMPLETED'; // Auto remove from marketplace
+                updates.status = 'COMPLETED';
             }
             database.ref(`job_posts/${jobId}`).update(updates);
 
-            // Transfer reward to worker balance
             database.ref(`users/${workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(reward)).then(() => {
                 alert('Proof Approved! Reward transferred to worker balance.');
             });
@@ -950,13 +943,14 @@
 
         if(!tx) return alert('Please enter the Transaction Hash (TxID)!');
 
-        database.ref('users/' + currentUser.phone + '/status').set('PENDING');
+        database.ref('users/' + currentUser.phone + '/activationRequest').set('PENDING');
 
         database.ref('requests').push({
             type: 'ID_Activation',
             phone: currentUser.phone,
             username: currentUser.name + " (" + currentUser.phone + ")",
             details: `Amount: $3 USDT (BEP20) | TxID: ${tx} | Proof URL: ${ss || 'N/A'}`,
+            status: 'PENDING',
             timestamp: Date.now()
         }).then(() => {
             alert('Account Activation Request submitted! ID status is now PENDING.');

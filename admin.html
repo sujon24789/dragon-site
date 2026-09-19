@@ -274,6 +274,9 @@
             updates['users/' + phone + '/activationRequest'] = (status === 'ACTIVE') ? 'APPROVED' : 'INACTIVE';
 
             database.ref().update(updates).then(() => {
+                if(status === 'ACTIVE') {
+                    distributeReferralCommissions(phone);
+                }
                 alert(`User ${phone} status changed to ${status}`);
                 document.getElementById('targetUserPhone').value = '';
             });
@@ -384,7 +387,11 @@
             database.ref('users/' + targetPhone).update({
                 status: 'ACTIVE',
                 activationRequest: 'APPROVED'
-            }).then(() => distributeReferralCommissions(targetPhone));
+            }).then(() => {
+                // Trigger 10-generation referral commission distribution upon approval
+                distributeReferralCommissions(targetPhone);
+                alert('ID Activation Request Approved & 10-Gen Commissions Distributed!');
+            });
         } else if(type === 'Deposit' && targetPhone) {
             let amt = explicitAmt || 0;
             if(!amt && details) {
@@ -394,6 +401,7 @@
             if(amt > 0) {
                 database.ref('users/' + targetPhone + '/balance').transaction((curr) => (curr || 0) + amt);
             }
+            alert('Deposit Request Approved!');
         } else if(type === 'Withdraw' && targetPhone) {
             let amt = explicitAmt || 0;
             if(!amt && details) {
@@ -403,24 +411,36 @@
             if(amt > 0) {
                 database.ref('users/' + targetPhone + '/balance').transaction((curr) => Math.max(0, (curr || 0) - amt));
             }
+            alert('Withdrawal Request Approved!');
+        } else {
+            alert('Request Approved!');
         }
-
-        alert('Request Approved!');
     }
 
     function rejectRequest(key, type, phone) {
         database.ref('requests/' + key + '/status').set('REJECTED');
 
-        if(type === 'ID_Activation' && phone) {
-            database.ref('users/' + phone).update({
+        let targetPhone = phone;
+        if(!targetPhone) {
+            database.ref('requests/' + key).once('value').then(s => {
+                if(s.exists() && s.val().phone) {
+                    targetPhone = s.val().phone;
+                    if(type === 'ID_Activation' && targetPhone) {
+                        database.ref('users/' + targetPhone).update({
+                            status: 'INACTIVE',
+                            activationRequest: 'REJECTED'
+                        });
+                    }
+                }
+            });
+        } else if(type === 'ID_Activation' && targetPhone) {
+            database.ref('users/' + targetPhone).update({
                 status: 'INACTIVE',
                 activationRequest: 'REJECTED'
-            }).then(() => {
-                alert('ID Activation Request Rejected.');
             });
-        } else {
-            alert('Request Rejected.');
         }
+
+        alert('Request Rejected.');
     }
 
     function loadPendingJobs() {
@@ -457,7 +477,6 @@
         database.ref('job_posts/' + jobId + '/status').set('APPROVED').then(() => alert('Job Approved & Published!'));
     }
 
-    // Admin rejects job and refunds deducted total cost back to creator's balance
     function rejectJob(jobId, creatorPhone, totalCost) {
         database.ref('job_posts/' + jobId + '/status').set('REJECTED').then(() => {
             if(creatorPhone && totalCost > 0) {
