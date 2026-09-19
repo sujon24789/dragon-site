@@ -85,6 +85,13 @@
         .downline-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
         .downline-title { font-size: 14px; font-weight: 700; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 10px; }
         .downline-item { font-size: 12px; color: #cbd5e1; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+
+        /* Summary Stats Cards Styling */
+        .summary-box { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #1e293b; }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { color: #94a3b8; }
+        .summary-value { font-weight: 600; color: #f8fafc; }
     </style>
 </head>
 <body>
@@ -311,11 +318,51 @@
             <button class="btn-success" onclick="submitDeposit()">Submit Deposit Request</button>
         </div>
 
-        <!-- Withdraw USDT Section -->
+        <!-- Withdraw USDT & Realtime Summary Section -->
         <div id="withdrawSection" class="card hidden">
-            <div class="card-title">💸 Withdraw USDT (BEP20)</div>
+            <div class="card-title">📋 WITHDRAWAL STATUS & SUMMARY</div>
             
-            <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">* Note: Your account must be ACTIVE and have sufficient balance to request withdrawals.</p>
+            <!-- Dynamic Income & Balance Overview -->
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span class="summary-label">💰 Total Earned Income:</span>
+                    <span class="summary-value" id="summaryTotalEarned" style="color:#38bdf8;">$0.00 USDT</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">👥 Referral Earnings:</span>
+                    <span class="summary-value" id="summaryRefEarnings" style="color:#38bdf8;">$0.00 USDT</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">🎁 Gifts / Bonus Income:</span>
+                    <span class="summary-value" id="summaryBonus" style="color:#38bdf8;">$0.00 USDT</span>
+                </div>
+            </div>
+
+            <div class="summary-box" style="border-color:#38bdf8;">
+                <div class="summary-row">
+                    <span class="summary-label" style="font-weight:bold; color:#fff;">💳 Available Balance:</span>
+                    <span class="summary-value" id="summaryAvailable" style="color:#4ade80; font-weight:bold; font-size:15px;">$0.00 USDT</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Withdrawal Breakdown -->
+            <div class="summary-box">
+                <div style="font-weight:700; color:#38bdf8; margin-bottom:8px;">📊 Withdrawal Details:</div>
+                <div class="summary-row">
+                    <span class="summary-label">✅ Total Approved:</span>
+                    <span class="summary-value" id="summaryApproved" style="color:#4ade80;">$0.00 USDT</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">❌ Total Rejected:</span>
+                    <span class="summary-value" id="summaryRejected" style="color:#f87171;">$0.00 USDT</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">⌛ Current Status:</span>
+                    <span class="summary-value" id="summaryStatus" style="color:#facc15;">Checking...</span>
+                </div>
+            </div>
+
+            <p style="font-size:11px; color:#94a3b8; margin:12px 0 8px 0;">* Note: Account must be ACTIVE to withdraw funds.</p>
 
             <div id="withFormArea">
                 <input type="number" id="withAmount" placeholder="Amount (USDT)">
@@ -324,7 +371,7 @@
             </div>
 
             <div id="withPendingMsg" class="info-msg msg-pending hidden">
-                <i class="fa-solid fa-clock"></i> You have a pending withdrawal request. Please wait for admin processing before submitting another request.
+                <i class="fa-solid fa-clock"></i> You have a pending withdrawal request. Please wait for admin processing.
             </div>
         </div>
 
@@ -495,7 +542,7 @@
                 const userData = {
                     name: name, phone: phone, pass: pass,
                     referredBy: ref || 'Direct', status: 'INACTIVE',
-                    balance: 0.00, commission: 0.00, joinedAt: Date.now()
+                    balance: 0.00, commission: 0.00, bonus: 0.00, joinedAt: Date.now()
                 };
                 userRef.set(userData).then(() => {
                     alert('Registration Successful! Please Sign In.');
@@ -552,27 +599,8 @@
         // Listen for User's Own Jobs & Submitted Proofs
         loadMyJobPostsAndProofs();
 
-        // Listen for Pending Withdrawal Status
-        database.ref('requests').orderByChild('phone').equalTo(currentUser.phone).on('value', (snapshot) => {
-            let hasPendingWithdrawal = false;
-            snapshot.forEach(child => {
-                const req = child.val();
-                if(req.type === 'Withdraw' && req.status === 'PENDING') {
-                    hasPendingWithdrawal = true;
-                }
-            });
-
-            const withForm = document.getElementById('withFormArea');
-            const withPending = document.getElementById('withPendingMsg');
-
-            if(hasPendingWithdrawal) {
-                withForm.classList.add('hidden');
-                withPending.classList.remove('hidden');
-            } else {
-                withForm.classList.remove('hidden');
-                withPending.classList.add('hidden');
-            }
-        });
+        // Listen for Realtime Withdrawal Status & Calculate Summary Breakdown
+        loadWithdrawalSummary();
     }
 
     function updateUI() {
@@ -627,6 +655,62 @@
             vipLockedMsg.classList.remove('hidden');
             vipTgLink.classList.add('hidden');
         }
+    }
+
+    // Dynamic Withdrawal Breakdown & Summary Calculation Engine
+    function loadWithdrawalSummary() {
+        database.ref('requests').orderByChild('phone').equalTo(currentUser.phone).on('value', (snapshot) => {
+            let totalApproved = 0;
+            let totalRejected = 0;
+            let hasPending = false;
+
+            if(snapshot.exists()) {
+                snapshot.forEach(child => {
+                    const req = child.val();
+                    if(req.type === 'Withdraw') {
+                        // Extract numeric withdrawal amount from details string
+                        const match = req.details ? req.details.match(/Amount:\s*([\d.]+)/) : null;
+                        const amt = match ? parseFloat(match[1]) : 0;
+
+                        if(req.status === 'APPROVED') {
+                            totalApproved += amt;
+                        } else if(req.status === 'REJECTED') {
+                            totalRejected += amt;
+                        } else if(req.status === 'PENDING') {
+                            hasPending = true;
+                        }
+                    }
+                });
+            }
+
+            const refEarnings = parseFloat(currentUser.commission || 0);
+            const bonusEarnings = parseFloat(currentUser.bonus || 0);
+            const totalEarned = refEarnings + bonusEarnings;
+            const availableBal = parseFloat(currentUser.balance || 0);
+
+            // Update Summary Card Labels
+            document.getElementById('summaryTotalEarned').innerText = '$' + totalEarned.toFixed(2) + ' USDT';
+            document.getElementById('summaryRefEarnings').innerText = '$' + refEarnings.toFixed(2) + ' USDT';
+            document.getElementById('summaryBonus').innerText = '$' + bonusEarnings.toFixed(2) + ' USDT';
+            document.getElementById('summaryAvailable').innerText = '$' + availableBal.toFixed(2) + ' USDT';
+
+            document.getElementById('summaryApproved').innerText = '$' + totalApproved.toFixed(2) + ' USDT';
+            document.getElementById('summaryRejected').innerText = '$' + totalRejected.toFixed(2) + ' USDT';
+
+            const statusElem = document.getElementById('summaryStatus');
+            const withForm = document.getElementById('withFormArea');
+            const withPending = document.getElementById('withPendingMsg');
+
+            if(hasPending) {
+                statusElem.innerHTML = '<span style="color:#facc15;">⏳ Pending Request</span>';
+                withForm.classList.add('hidden');
+                withPending.classList.remove('hidden');
+            } else {
+                statusElem.innerHTML = '<span style="color:#4ade80;">✅ No Pending Request</span>';
+                withForm.classList.remove('hidden');
+                withPending.classList.add('hidden');
+            }
+        });
     }
 
     // Dynamic 10-Generation Downline Calculation Engine
