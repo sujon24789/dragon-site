@@ -30,7 +30,7 @@
         .balance-card span { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px; }
         .balance-card h3 { font-size: 18px; color: #38bdf8; }
 
-        /* Top Action Quick Menu (4 Main Buttons) */
+        /* Top Action Quick Menu */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
         .action-item { background: #1e293b; border: 1px solid #334155; padding: 12px 4px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
         .action-item:hover { border-color: #38bdf8; }
@@ -79,6 +79,7 @@
         .msg-verified { background: rgba(22, 163, 74, 0.15); color: #4ade80; border: 1px solid #16a34a; }
         .locked-card { opacity: 0.6; pointer-events: none; border: 1px solid #dc2626 !important; }
         .job-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; margin-top: 10px; }
+        .proof-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -198,12 +199,12 @@
                         <i class="fa-solid fa-folder-plus" style="color:#06b6d4;"></i>
                         <span class="btn-label">Add Job Post</span>
                     </div>
-                    <div class="action-item" onclick="showSection('googleReviewSection'); toggleMoreMenu();">
-                        <i class="fa-brands fa-google" style="color:#ea4335;"></i>
-                        <span class="btn-label">Google Review</span>
+                    <div class="action-item" onclick="showSection('myPostedJobsSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-list-check" style="color:#10b981;"></i>
+                        <span class="btn-label">My Jobs & Proofs</span>
                     </div>
                     <div class="action-item" onclick="showSection('microJobSection'); toggleMoreMenu();">
-                        <i class="fa-solid fa-list-check" style="color:#38bdf8;"></i>
+                        <i class="fa-solid fa-briefcase" style="color:#38bdf8;"></i>
                         <span class="btn-label">Micro Job</span>
                     </div>
                 </div>
@@ -212,7 +213,6 @@
 
         <!-- Home Section -->
         <div id="homeSection">
-            <!-- VIP Income Channel -->
             <div class="card" id="vipIncomeCard">
                 <div class="card-title"><i class="fa-solid fa-rocket" style="color:#f59e0b;"></i> VIP High Income Channel</div>
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Join our VIP Telegram list after account activation to unlock extra free income channels:</p>
@@ -227,33 +227,35 @@
             </div>
         </div>
 
-        <!-- Google Reviews Section (Inside More Option) -->
-        <div id="googleReviewSection" class="card hidden">
-            <div class="card-title"><i class="fa-brands fa-google" style="color:#ea4335;"></i> Google Review Tasks</div>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Give 5-Star reviews on Google Maps and submit proof URL to earn USDT.</p>
+        <!-- Micro Jobs Section (Approved Dynamic Jobs) -->
+        <div id="microJobSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-briefcase" style="color:#38bdf8;"></i> Approved Micro Jobs</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete available jobs posted by users and earn USDT rewards upon approval.</p>
             
-            <div class="job-card">
-                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-location-dot"></i> Google Maps 5-Star Review</h4>
-                <p style="font-size:11px; color:#94a3b8;">Click link, post a 5-star review with good feedback, upload screenshot proof.</p>
-                <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.20 USDT</p>
-                
-                <input type="text" id="gReviewProof" placeholder="Screenshot Link (Imgur / PostImage URL)">
-                <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobProof('Google Review Task', 'gReviewProof')">Submit Review Proof</button>
+            <div id="microJobsListContainer">
+                <p style="font-size:12px; color:#94a3b8; text-align:center;">Loading available micro jobs...</p>
             </div>
         </div>
 
-        <!-- Micro Jobs Section (Inside More Option) -->
-        <div id="microJobSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-list-check" style="color:#38bdf8;"></i> Micro Jobs Tasks</div>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete simple online tasks like Telegram joining, social media likes, or app reviews.</p>
-            
-            <div class="job-card">
-                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-brands fa-telegram"></i> Telegram Channel Join & Share</h4>
-                <p style="font-size:11px; color:#94a3b8;">Join official partner channel, take a screenshot, and submit proof.</p>
-                <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.10 USDT</p>
-                
-                <input type="text" id="microJobProof" placeholder="Screenshot Link (Imgur / PostImage URL)">
-                <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobProof('Micro Job Task', 'microJobProof')">Submit Job Proof</button>
+        <!-- User Job Post Creation Section -->
+        <div id="jobPostSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-plus-circle" style="color:#06b6d4;"></i> Create Job Post</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job request. Admin will review and publish it to the Micro Job marketplace.</p>
+
+            <input type="text" id="postTitle" placeholder="Job Title (e.g. Telegram Channel Join)">
+            <input type="text" id="postLink" placeholder="Target Link / URL">
+            <input type="number" id="postReward" placeholder="Reward per Worker (USDT)">
+            <textarea id="postInstruction" rows="3" placeholder="Work Instructions / Requirements"></textarea>
+            <button class="btn-success" onclick="submitJobPost()">Submit Job Post for Approval</button>
+        </div>
+
+        <!-- My Posted Jobs & Proof Review Section -->
+        <div id="myPostedJobsSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> My Posted Jobs & Proofs</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Review worker submissions for your posted jobs and Approve/Reject them.</p>
+
+            <div id="myJobsContainer">
+                <p style="font-size:12px; color:#94a3b8; text-align:center;">Loading your job posts...</p>
             </div>
         </div>
 
@@ -266,18 +268,6 @@
                 <p><b>Status:</b> <span id="profStatus" style="color:#fff;">-</span></p>
                 <p><b>Referred By:</b> <span id="profRefBy" style="color:#fff;">-</span></p>
             </div>
-        </div>
-
-        <!-- Add Job Post Section -->
-        <div id="jobPostSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-plus-circle" style="color:#06b6d4;"></i> Create Micro Job / Review Request</div>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job/review request to admin to get workers for your tasks.</p>
-
-            <input type="text" id="postTitle" placeholder="Job Title (e.g. Google Maps 5-Star Review)">
-            <input type="text" id="postLink" placeholder="Target Link (Map Link / Social Link)">
-            <input type="number" id="postBudget" placeholder="Total Budget / Reward Allocation (USDT)">
-            <textarea id="postInstruction" rows="3" placeholder="Work Instructions / Requirements"></textarea>
-            <button class="btn-success" onclick="submitJobPost()">Submit Job Post</button>
         </div>
 
         <!-- Activate Account Section ($3 USDT) -->
@@ -526,6 +516,12 @@
             }
         });
 
+        // Listen for Approved Jobs to Display in Micro Job Section
+        loadApprovedJobs();
+
+        // Listen for User's Own Jobs & Submitted Proofs
+        loadMyJobPostsAndProofs();
+
         // Listen for Pending Withdrawal Status
         database.ref('requests').orderByChild('phone').equalTo(currentUser.phone).on('value', (snapshot) => {
             let hasPendingWithdrawal = false;
@@ -556,7 +552,6 @@
         document.getElementById('refCommission').innerText = (currentUser.commission || 0).toFixed(2) + ' USDT';
         document.getElementById('refLink').innerText = 'https://sujon24789.github.io/dragon-site/?ref=' + currentUser.phone;
 
-        // Populate Profile Info
         document.getElementById('profName').innerText = currentUser.name;
         document.getElementById('profPhone').innerText = currentUser.phone;
         document.getElementById('profStatus').innerText = currentUser.status;
@@ -605,7 +600,7 @@
     }
 
     function showSection(sectionId) {
-        ['homeSection', 'googleReviewSection', 'microJobSection', 'activateSection', 'depositSection', 'withdrawSection', 'referSection', 'profileSection', 'jobPostSection', 'supportSection'].forEach(id => {
+        ['homeSection', 'microJobSection', 'myPostedJobsSection', 'activateSection', 'depositSection', 'withdrawSection', 'referSection', 'profileSection', 'jobPostSection', 'supportSection'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.classList.add('hidden');
         });
@@ -619,13 +614,172 @@
         if(btnElem) btnElem.classList.add('active');
     }
 
+    // Submit Job Post for Admin Approval
+    function submitJobPost() {
+        const title = document.getElementById('postTitle').value.trim();
+        const link = document.getElementById('postLink').value.trim();
+        const reward = parseFloat(document.getElementById('postReward').value);
+        const instruction = document.getElementById('postInstruction').value.trim();
+
+        if(!title || !link || !reward) {
+            return alert('Please fill in Job Title, Link, and Reward!');
+        }
+
+        const jobId = database.ref('job_posts').push().key;
+
+        database.ref('job_posts/' + jobId).set({
+            jobId: jobId,
+            creatorPhone: currentUser.phone,
+            creatorName: currentUser.name,
+            title: title,
+            link: link,
+            reward: reward,
+            instruction: instruction || 'N/A',
+            status: 'PENDING',
+            createdAt: Date.now()
+        }).then(() => {
+            alert('Job post submitted for Admin approval!');
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postLink').value = '';
+            document.getElementById('postReward').value = '';
+            document.getElementById('postInstruction').value = '';
+        });
+    }
+
+    // Load Approved Jobs for Micro Job Section
+    function loadApprovedJobs() {
+        database.ref('job_posts').orderByChild('status').equalTo('APPROVED').on('value', (snapshot) => {
+            const container = document.getElementById('microJobsListContainer');
+            container.innerHTML = '';
+
+            if(!snapshot.exists()) {
+                container.innerHTML = '<p style="font-size:12px; color:#94a3b8; text-align:center;">No micro jobs available at the moment.</p>';
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const job = child.val();
+                const jobHtml = `
+                    <div class="job-card">
+                        <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-tasks"></i> ${job.title}</h4>
+                        <p style="font-size:11px; color:#94a3b8;">${job.instruction}</p>
+                        <p style="font-size:11px; color:#38bdf8; margin-top:4px;"><b>Link:</b> <a href="${job.link}" target="_blank" style="color:#38bdf8;">${job.link}</a></p>
+                        <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $${parseFloat(job.reward).toFixed(2)} USDT</p>
+                        
+                        <input type="text" id="proofText_${job.jobId}" placeholder="Task Text Details / Notes">
+                        <input type="text" id="proofImg_${job.jobId}" placeholder="Screenshot Link (Imgur / PostImage URL)">
+                        <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobWork('${job.jobId}', '${job.creatorPhone}', ${job.reward})">Submit Job Proof</button>
+                    </div>
+                `;
+                container.innerHTML += jobHtml;
+            });
+        });
+    }
+
+    // Worker Submits Job Proof
+    function submitJobWork(jobId, creatorPhone, reward) {
+        if(currentUser.status !== 'ACTIVE') {
+            return alert('Please activate your ID with $3 USDT to do micro jobs!');
+        }
+
+        const textProof = document.getElementById(`proofText_${jobId}`).value.trim();
+        const imgProof = document.getElementById(`proofImg_${jobId}`).value.trim();
+
+        if(!textProof && !imgProof) {
+            return alert('Please provide either text details or screenshot link as proof!');
+        }
+
+        const proofId = database.ref(`job_posts/${jobId}/proofs`).push().key;
+
+        database.ref(`job_posts/${jobId}/proofs/${proofId}`).set({
+            proofId: proofId,
+            workerPhone: currentUser.phone,
+            workerName: currentUser.name,
+            textProof: textProof || 'N/A',
+            imgProof: imgProof || 'N/A',
+            reward: reward,
+            status: 'PENDING',
+            submittedAt: Date.now()
+        }).then(() => {
+            alert('Job proof submitted to job poster! Waiting for creator approval.');
+            document.getElementById(`proofText_${jobId}`).value = '';
+            document.getElementById(`proofImg_${jobId}`).value = '';
+        });
+    }
+
+    // Load User's Posted Jobs & Submissions to Approve/Reject
+    function loadMyJobPostsAndProofs() {
+        database.ref('job_posts').orderByChild('creatorPhone').equalTo(currentUser.phone).on('value', (snapshot) => {
+            const container = document.getElementById('myJobsContainer');
+            container.innerHTML = '';
+
+            if(!snapshot.exists()) {
+                container.innerHTML = '<p style="font-size:12px; color:#94a3b8; text-align:center;">You have not posted any jobs yet.</p>';
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const job = child.val();
+                let statusBadge = `<span style="color:#facc15;">[PENDING ADMIN REVIEW]</span>`;
+                if(job.status === 'APPROVED') statusBadge = `<span style="color:#4ade80;">[APPROVED & LIVE]</span>`;
+
+                let proofsHtml = '';
+                if(job.proofs) {
+                    Object.values(job.proofs).forEach(p => {
+                        if(p.status === 'PENDING') {
+                            proofsHtml += `
+                                <div class="proof-box">
+                                    <p><b>Worker:</b> ${p.workerName} (${p.workerPhone})</p>
+                                    <p><b>Text Proof:</b> ${p.textProof}</p>
+                                    <p><b>Screenshot:</b> <a href="${p.imgProof}" target="_blank" style="color:#38bdf8;">${p.imgProof}</a></p>
+                                    <div style="display:flex; gap:6px; margin-top:8px;">
+                                        <button class="btn-success" style="padding:6px; font-size:11px;" onclick="approveProof('${job.jobId}', '${p.proofId}', '${p.workerPhone}', ${p.reward})">Approve & Pay $${p.reward}</button>
+                                        <button class="btn-danger" style="padding:6px; font-size:11px;" onclick="rejectProof('${job.jobId}', '${p.proofId}')">Reject</button>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            proofsHtml += `<div class="proof-box"><p><b>Worker:</b> ${p.workerName} - Status: <b style="color:${p.status === 'APPROVED' ? '#4ade80':'#f87171'}">${p.status}</b></p></div>`;
+                        }
+                    });
+                } else {
+                    proofsHtml = `<p style="font-size:11px; color:#94a3b8; margin-top:6px;">No submissions yet.</p>`;
+                }
+
+                container.innerHTML += `
+                    <div class="job-card">
+                        <h4 style="font-size:13px; color:#38bdf8;">${job.title} ${statusBadge}</h4>
+                        <p style="font-size:11px; color:#94a3b8;">Reward per worker: $${parseFloat(job.reward).toFixed(2)} USDT</p>
+                        <h5 style="font-size:12px; color:#fff; margin-top:8px;">Submitted Proofs:</h5>
+                        ${proofsHtml}
+                    </div>
+                `;
+            });
+        });
+    }
+
+    // Job Creator Approves Proof & Transfers Balance
+    function approveProof(jobId, proofId, workerPhone, reward) {
+        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
+
+        // Add Balance to Worker
+        database.ref(`users/${workerPhone}/balance`).transaction((curr) => {
+            return (curr || 0) + parseFloat(reward);
+        }).then(() => {
+            alert('Proof Approved! Reward transferred to worker balance.');
+        });
+    }
+
+    // Job Creator Rejects Proof
+    function rejectProof(jobId, proofId) {
+        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('REJECTED').then(() => {
+            alert('Proof Rejected.');
+        });
+    }
+
     function submitActivation() {
-        if(currentUser.status === 'PENDING') {
-            return alert('Your activation request is already pending!');
-        }
-        if(currentUser.status === 'ACTIVE') {
-            return alert('Your ID is already verified and active!');
-        }
+        if(currentUser.status === 'PENDING') return alert('Your activation request is already pending!');
+        if(currentUser.status === 'ACTIVE') return alert('Your ID is already verified and active!');
 
         const tx = document.getElementById('actTxHash').value.trim();
         const ss = document.getElementById('actScreenshot').value.trim();
@@ -668,22 +822,12 @@
         const amt = parseFloat(document.getElementById('withAmount').value);
         const addr = document.getElementById('withAddress').value.trim();
 
-        if(currentUser.status !== 'ACTIVE') {
-            return alert('Account is not ACTIVE! ID activation required for withdrawal.');
-        }
-
-        if(!amt || amt <= 0 || !addr) {
-            return alert('Please enter valid amount and BEP20 address!');
-        }
+        if(currentUser.status !== 'ACTIVE') return alert('Account is not ACTIVE! ID activation required for withdrawal.');
+        if(!amt || amt <= 0 || !addr) return alert('Please enter valid amount and BEP20 address!');
 
         const currentBalance = parseFloat(currentUser.balance || 0);
-        if(currentBalance <= 0) {
-            return alert('Your account balance is 0 USDT!');
-        }
-
-        if(amt > currentBalance) {
-            return alert(`Insufficient balance! Your balance is $${currentBalance.toFixed(2)} USDT`);
-        }
+        if(currentBalance <= 0) return alert('Your account balance is 0 USDT!');
+        if(amt > currentBalance) return alert(`Insufficient balance! Your balance is $${currentBalance.toFixed(2)} USDT`);
 
         database.ref('requests').push({
             type: 'Withdraw',
@@ -696,51 +840,6 @@
             alert('Withdrawal request submitted! Please wait for admin approval.');
             document.getElementById('withAmount').value = '';
             document.getElementById('withAddress').value = '';
-        });
-    }
-
-    function submitJobProof(jobCategory, inputId) {
-        if(currentUser.status !== 'ACTIVE') {
-            return alert('Please activate your ID with $3 USDT to submit task proofs!');
-        }
-
-        const proof = document.getElementById(inputId).value.trim();
-        if(!proof) return alert('Please enter screenshot proof link!');
-
-        database.ref('requests').push({
-            type: 'Task_Proof',
-            category: jobCategory,
-            username: currentUser.name + " (" + currentUser.phone + ")",
-            details: `Category: ${jobCategory} | Proof Link: ${proof}`,
-            timestamp: Date.now()
-        }).then(() => {
-            alert(`${jobCategory} proof submitted! Admin will verify.`);
-            document.getElementById(inputId).value = '';
-        });
-    }
-
-    function submitJobPost() {
-        const title = document.getElementById('postTitle').value.trim();
-        const link = document.getElementById('postLink').value.trim();
-        const budget = document.getElementById('postBudget').value.trim();
-        const instruction = document.getElementById('postInstruction').value.trim();
-
-        if(!title || !link || !budget) {
-            return alert('Please fill in Job Title, Link, and Budget!');
-        }
-
-        database.ref('requests').push({
-            type: 'Job_Post_Request',
-            phone: currentUser.phone,
-            username: currentUser.name + " (" + currentUser.phone + ")",
-            details: `Title: ${title} | Link: ${link} | Budget: ${budget} USDT | Instructions: ${instruction || 'N/A'}`,
-            timestamp: Date.now()
-        }).then(() => {
-            alert('Job post request submitted for admin review!');
-            document.getElementById('postTitle').value = '';
-            document.getElementById('postLink').value = '';
-            document.getElementById('postBudget').value = '';
-            document.getElementById('postInstruction').value = '';
         });
     }
 
