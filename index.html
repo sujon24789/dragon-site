@@ -102,7 +102,6 @@
         <i class="fa-solid fa-bullhorn"></i> <span id="liveNotice">Welcome to Dragon Network USDT Portal!</span>
     </div>
 
-    <!-- Auth Box / Login & Register -->
     <div id="authBox" class="card">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <button id="tabLoginBtn" style="background:#0284c7;" onclick="switchTab('login')">Sign In</button>
@@ -126,7 +125,6 @@
         </div>
     </div>
 
-    <!-- User 2FA Verification Box (If Enabled) -->
     <div id="user2FABox" class="card hidden">
         <div class="card-title"><i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i> Optional 2FA Verification</div>
         <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Your account has 2FA enabled. Enter the 6-digit Google Authenticator code:</p>
@@ -200,7 +198,7 @@
                     </div>
                     <div class="action-item" onclick="showSection('profileSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-user" style="color:#ec4899;"></i>
-                        <span class="btn-label">Profile & 2FA</span>
+                        <span class="btn-label">Profile & Security</span>
                     </div>
                     <div class="action-item" onclick="showSection('jobPostSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-folder-plus" style="color:#06b6d4;"></i>
@@ -263,8 +261,9 @@
             </div>
         </div>
 
+        <!-- Profile Section with Password Change & 2FA -->
         <div id="profileSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-id-card" style="color:#ec4899;"></i> User Profile & Optional 2FA</div>
+            <div class="card-title"><i class="fa-solid fa-id-card" style="color:#ec4899;"></i> User Profile & Security</div>
             <div style="font-size:13px; color:#94a3b8; line-height:2; margin-bottom:15px;">
                 <p><b>Name:</b> <span id="profName" style="color:#fff;">-</span></p>
                 <p><b>Mobile:</b> <span id="profPhone" style="color:#fff;">-</span></p>
@@ -273,8 +272,16 @@
                 <p><b>2FA Status:</b> <span id="prof2FAStatus" style="color:#facc15;">DISABLED</span></p>
             </div>
 
+            <!-- Change Password Box -->
+            <div style="border-top:1px solid #334155; padding-top:12px; margin-bottom:15px;">
+                <p style="font-size:13px; color:#38bdf8; margin-bottom:6px; font-weight:bold;">Change Password:</p>
+                <input type="password" id="oldPassInput" placeholder="Enter Current Password">
+                <input type="password" id="newPassInput" placeholder="Enter New Password">
+                <button class="btn-success" onclick="changeUserPassword()">Update Password</button>
+            </div>
+
             <!-- Optional 2FA Control Area -->
-            <div id="enable2FAContainer">
+            <div id="enable2FAContainer" style="border-top:1px solid #334155; padding-top:12px;">
                 <button class="btn-success" onclick="startEnable2FA()">Enable Google Authenticator 2FA</button>
             </div>
 
@@ -542,7 +549,6 @@
                 const u = snapshot.val();
                 pendingLoginUser = u;
 
-                // Check if user has optional 2FA enabled
                 if(u.twoFactorEnabled && u.totpSecret) {
                     document.getElementById('authBox').classList.add('hidden');
                     document.getElementById('user2FABox').classList.remove('hidden');
@@ -587,7 +593,29 @@
         pendingLoginUser = null;
     }
 
-    // Optional 2FA setup inside Profile
+    // User change password using old password verification
+    function changeUserPassword() {
+        const oldPass = document.getElementById('oldPassInput').value.trim();
+        const newPass = document.getElementById('newPassInput').value.trim();
+
+        if(!oldPass || !newPass) return alert('Please enter both current and new passwords!');
+
+        database.ref('users/' + currentUser.phone).once('value').then((snapshot) => {
+            if(!snapshot.exists()) return alert('User not found!');
+            const userData = snapshot.val();
+
+            if(userData.pass !== oldPass) {
+                return alert('Current password is incorrect!');
+            }
+
+            database.ref('users/' + currentUser.phone + '/pass').set(newPass).then(() => {
+                alert('Password updated successfully!');
+                document.getElementById('oldPassInput').value = '';
+                document.getElementById('newPassInput').value = '';
+            });
+        });
+    }
+
     function startEnable2FA() {
         let secret = new OTPAuth.Secret({ size: 20 });
         tempUserSecret = secret.base32;
@@ -1029,7 +1057,6 @@
                 let proofsHtml = '';
                 if(job.proofs) {
                     Object.values(job.proofs).forEach(p => {
-                        // Check 72 hours auto-approve condition
                         if(p.status === 'PENDING' && (now - p.submittedAt > SEVENTY_TWO_HOURS)) {
                             database.ref(`job_posts/${job.jobId}/proofs/${p.proofId}/status`).set('APPROVED');
                             database.ref(`users/${p.workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(p.reward));
