@@ -1,166 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Network - Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Dragon Network - User Portal</title>
     <style>
-        .blur-locked {
-            filter: blur(5px);
-            pointer-events: none;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        h1 { color: #38bdf8; text-align: center; margin-bottom: 20px; }
+        .card { background: #1e293b; padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .notice-box { background: #0284c7; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+        input, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; font-size: 15px; }
+        input, textarea { background: #0f172a; color: #fff; border: 1px solid #475569; }
+        button { background: #0284c7; color: white; font-weight: bold; cursor: pointer; margin-top: 12px; }
+        button:hover { background: #0369a1; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-buttons button { margin: 0; background: #334155; }
+        .tab-buttons button.active { background: #0284c7; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .hidden { display: none; }
+        .user-info { font-size: 16px; margin-bottom: 10px; line-height: 1.6; }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen font-sans">
+<body>
 
-    <!-- Top Navigation -->
-    <nav class="bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-amber-500 tracking-wider">🐉 DRAGON NETWORK</h1>
-        <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-3 py-1 text-sm rounded transition">Logout</button>
-    </nav>
+<div class="container">
+    <h1>🐲 Dragon Network</h1>
 
-    <div class="max-w-md mx-auto p-4 space-y-4">
-
-        <!-- USER PROFILE CARD -->
-        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-            <h2 class="text-sm font-semibold text-slate-400 mb-3 border-b border-slate-700 pb-1">👤 USER PROFILE</h2>
-            
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Name:</span>
-                    <span id="userName" class="font-medium">John Doe</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-400">User ID:</span>
-                    <span id="userIdDisplay" class="font-bold text-amber-400">LOCKED 🔒</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-400">Status:</span>
-                    <span id="userStatus" class="px-2 py-0.5 rounded text-xs font-bold bg-red-900 text-red-300">🔴 NON ACTIVE</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Upline ID:</span>
-                    <span id="uplineId" class="font-medium">DRG99081</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Upline Earnings:</span>
-                    <span id="uplineEarnings" class="text-green-400 font-semibold">$124.50 USDT</span>
-                </div>
-                <div class="border-t border-slate-700 pt-2 flex justify-between">
-                    <span class="text-slate-400">Balance:</span>
-                    <span id="userBalance" class="text-amber-400 font-bold">$0.00 USDT</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Referral Earnings:</span>
-                    <span id="referralEarnings" class="text-green-400 font-bold">$0.00 USDT</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ACCOUNT ACTIVATION BOX (Visible when NOT Active) -->
-        <div id="activationBox" class="bg-amber-950/40 border border-amber-500/50 rounded-xl p-4 text-center">
-            <h3 class="text-amber-400 font-bold text-lg mb-1">⚡ ACCOUNT ACTIVATION</h3>
-            <p class="text-xs text-slate-300 mb-3">Pay <b>3 USDT</b> to activate your account, get your User ID, and unlock all features.</p>
-            
-            <div class="bg-slate-900 p-2 rounded border border-slate-700 text-xs break-all font-mono mb-3 select-all">
-                0xc86f74308b1d950d6eb8dfec33445dbee279b049
-            </div>
-
-            <input type="text" id="txHashInput" placeholder="Enter Transaction Hash / ID" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-xs text-white mb-2 focus:outline-none focus:border-amber-500">
-            <button onclick="submitDeposit()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 rounded text-sm transition">Submit Deposit</button>
-        </div>
-
-        <!-- ALREADY ACTIVE BOX (Hidden by default) -->
-        <div id="activeBox" class="hidden bg-emerald-950/40 border border-emerald-500/50 rounded-xl p-3 text-center">
-            <p class="text-emerald-400 font-bold text-sm">🔵 ACCOUNT ALREADY ACTIVE</p>
-            <p class="text-xs text-slate-300">Your Dragon account is fully verified and active.</p>
-        </div>
-
-        <!-- MAIN DASHBOARD FEATURES (Blurred/Locked until ACTIVE) -->
-        <div id="lockedFeatures" class="space-y-4 blur-locked">
-            
-            <!-- Telegram Channels & Community -->
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                <h3 class="text-sm font-semibold text-slate-400 mb-2">⭐ PREMIUM & SUPPORT LINKS</h3>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <a id="premiumLink" href="#" target="_blank" class="bg-purple-900/50 hover:bg-purple-800 border border-purple-500 text-purple-200 p-2 rounded text-center font-bold">🚀 Premium Income Group</a>
-                    <a href="https://t.me/FreelancerT10" target="_blank" class="bg-blue-900/50 hover:bg-blue-800 border border-blue-500 text-blue-200 p-2 rounded text-center font-bold">🔴 Daily Live Stream</a>
-                    <a href="https://t.me/DragonOfficialChannele" target="_blank" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-center">Official Channel</a>
-                    <a href="https://t.me/DragonTop10" target="_blank" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-center">Official Group</a>
-                    <a href="https://t.me/publickproof" target="_blank" class="col-span-2 bg-emerald-900/40 border border-emerald-600 text-emerald-300 p-2 rounded text-center font-bold">💳 Payment Proof Channel</a>
-                </div>
-            </div>
-
-            <!-- Micro Jobs & Tasks -->
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-2">
-                <h3 class="text-sm font-semibold text-slate-400">💼 MICRO JOBS & REVIEWS</h3>
-                <button class="w-full bg-blue-600 hover:bg-blue-700 text-xs font-bold py-2 rounded">Complete Google Review Tasks</button>
-                <button class="w-full bg-slate-700 hover:bg-slate-600 text-xs font-bold py-2 rounded">Post a Micro Job</button>
-            </div>
-
-            <!-- Downline & Withdraw -->
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex justify-between gap-2">
-                <button class="w-1/2 bg-slate-700 hover:bg-slate-600 text-xs py-2 rounded font-bold">View Downline</button>
-                <button class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-xs py-2 rounded font-bold">Withdraw Funds</button>
-            </div>
-
-        </div>
-
+    <div class="notice-box">
+        <strong>📢 নোটিশ: </strong> <span id="liveNotice">Loading...</span>
     </div>
 
-    <!-- Frontend UI Script -->
-    <script>
-        // Mock User Data State
-        let currentUser = {
-            status: "🔴 NON ACTIVE", // Options: "🔴 NON ACTIVE", "🟡 PENDING", "🔵 ACTIVE"
-            userId: null
-        };
+    <div id="authBox" class="card">
+        <div class="tab-buttons">
+            <button id="tabLoginBtn" class="active" onclick="switchTab('login')">Login</button>
+            <button id="tabRegBtn" onclick="switchTab('register')">Register</button>
+        </div>
 
-        function updateUI() {
-            const statusEl = document.getElementById("userStatus");
-            const userIdEl = document.getElementById("userIdDisplay");
-            const lockedDiv = document.getElementById("lockedFeatures");
-            const activationBox = document.getElementById("activationBox");
-            const activeBox = document.getElementById("activeBox");
-            const premiumLink = document.getElementById("premiumLink");
+        <div id="loginForm">
+            <h3>একাউন্টে লগইন করুন</h3>
+            <input type="text" id="loginPhone" placeholder="মোবাইল নম্বর (Phone)">
+            <input type="password" id="loginPass" placeholder="পাসওয়ার্ড (Password)">
+            <button onclick="userLogin()">লগইন করুন</button>
+        </div>
 
-            statusEl.innerText = currentUser.status;
+        <div id="regForm" class="hidden">
+            <h3>নতুন একাউন্ট খুলুন</h3>
+            <input type="text" id="regName" placeholder="আপনার নাম (Full Name)">
+            <input type="text" id="regPhone" placeholder="মোবাইল নম্বর (Phone)">
+            <input type="password" id="regPass" placeholder="পাসওয়ার্ড (Password)">
+            <button class="btn-success" onclick="userRegister()">রেজিস্ট্রেশন করুন</button>
+        </div>
+    </div>
 
-            if (currentUser.status === "🔴 NON ACTIVE") {
-                statusEl.className = "px-2 py-0.5 rounded text-xs font-bold bg-red-900 text-red-300";
-                userIdEl.innerText = "LOCKED 🔒";
-                lockedDiv.classList.add("blur-locked");
-                premiumLink.removeAttribute("href");
-            } else if (currentUser.status === "🟡 PENDING") {
-                statusEl.className = "px-2 py-0.5 rounded text-xs font-bold bg-yellow-900 text-yellow-300";
-                userIdEl.innerText = "PENDING APPROVAL ⏳";
-                activationBox.innerHTML = `<p class="text-yellow-400 text-sm font-bold">🟡 Payment Under Admin Review</p><p class="text-xs text-slate-400 mt-1">Please wait for admin approval to get your User ID.</p>`;
-                lockedDiv.classList.add("blur-locked");
-            } else if (currentUser.status === "🔵 ACTIVE") {
-                statusEl.className = "px-2 py-0.5 rounded text-xs font-bold bg-blue-900 text-blue-300";
-                userIdEl.innerText = currentUser.userId || "DRG10284";
-                activationBox.classList.add("hidden");
-                activeBox.classList.remove("hidden");
-                lockedDiv.classList.remove("blur-locked");
-                premiumLink.href = "https://t.me/addlist/1nxTqgTvDIcxYzA1";
-            }
+    <div id="userDashboard" class="card hidden">
+        <h3>স্বাগতম, <span id="dashName" style="color:#38bdf8;"></span>!</h3>
+        <div class="user-info">
+            <p>📱 ফোন: <span id="dashPhone"></span></p>
+            <p>💰 ব্যালেন্স: <strong>0 BDT</strong></p>
+        </div>
+
+        <hr style="border-color:#334155; margin: 15px 0;">
+
+        <h3>অ্যাডমিনকে রিকোয়েস্ট পাঠান</h3>
+        <textarea id="userMsg" rows="3" placeholder="আপনার রিকোয়েস্ট বা সমস্যার কথা লিখুন..."></textarea>
+        <button class="btn-success" onclick="sendRequest()">রিকোয়েস্ট পাঠান</button>
+        
+        <button style="background:#dc2626; margin-top:20px;" onclick="logout()">লগআউট করুন</button>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyADJG4lXeMOJqbm11q5dG9KI3IxcpoXUs0",
+      authDomain: "dragon-network-db5ba.firebaseapp.com",
+      projectId: "dragon-network-db5ba",
+      storageBucket: "dragon-network-db5ba.firebasestorage.app",
+      messagingSenderId: "186488018721",
+      appId: "1:186488018721:web:a8a5a85c51ede7b4be1060",
+      databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    let currentUser = null;
+
+    database.ref('site/notice').on('value', (snapshot) => {
+        document.getElementById('liveNotice').innerText = snapshot.val() || 'Dragon Network-এ আপনাকে স্বাগতম!';
+    });
+
+    function switchTab(type) {
+        if(type === 'login') {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('regForm').classList.add('hidden');
+            document.getElementById('tabLoginBtn').classList.add('active');
+            document.getElementById('tabRegBtn').classList.remove('active');
+        } else {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('regForm').classList.remove('hidden');
+            document.getElementById('tabLoginBtn').classList.remove('active');
+            document.getElementById('tabRegBtn').classList.add('active');
+        }
+    }
+
+    function userRegister() {
+        const name = document.getElementById('regName').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const pass = document.getElementById('regPass').value.trim();
+
+        if(!name || !phone || !pass) {
+            alert('সবগুলো ঘর পূরণ করুন!');
+            return;
         }
 
-        function submitDeposit() {
-            const tx = document.getElementById("txHashInput").value;
-            if(!tx) {
-                alert("Please enter Transaction Hash!");
-                return;
+        const userRef = database.ref('users/' + phone);
+        userRef.once('value', (snapshot) => {
+            if(snapshot.exists()) {
+                alert('এই ফোন নম্বরে ইতিপূর্বে অ্যাকাউন্ট খোলা হয়েছে!');
+            } else {
+                userRef.set({
+                    name: name,
+                    phone: phone,
+                    pass: pass,
+                    joinedAt: Date.now()
+                }).then(() => {
+                    database.ref('requests').push({
+                        username: name + " (" + phone + ")",
+                        message: "নতুন অ্যাকাউন্ট রেজিস্টার করেছে",
+                        timestamp: Date.now()
+                    });
+
+                    alert('রেজিস্ট্রেশন সফল হয়েছে! এখন লগইন করুন।');
+                    switchTab('login');
+                    document.getElementById('loginPhone').value = phone;
+                });
             }
-            currentUser.status = "🟡 PENDING";
-            updateUI();
+        });
+    }
+
+    function userLogin() {
+        const phone = document.getElementById('loginPhone').value.trim();
+        const pass = document.getElementById('loginPass').value.trim();
+
+        if(!phone || !pass) {
+            alert('ফোন নম্বর এবং পাসওয়ার্ড দিন!');
+            return;
         }
 
-        // Initialize UI
-        updateUI();
-    </script>
+        database.ref('users/' + phone).once('value', (snapshot) => {
+            if(snapshot.exists()) {
+                const userData = snapshot.val();
+                if(userData.pass === pass) {
+                    currentUser = userData;
+                    showDashboard();
+                } else {
+                    alert('ভুল পাসওয়ার্ড!');
+                }
+            } else {
+                alert('এই নম্বরে কোনো অ্যাকাউন্ট পাওয়া যায়নি!');
+            }
+        });
+    }
+
+    function showDashboard() {
+        document.getElementById('authBox').classList.add('hidden');
+        document.getElementById('userDashboard').classList.remove('hidden');
+        document.getElementById('dashName').innerText = currentUser.name;
+        document.getElementById('dashPhone').innerText = currentUser.phone;
+    }
+
+    function sendRequest() {
+        const msg = document.getElementById('userMsg').value.trim();
+        if(!msg) {
+            alert('আপনার মেসেজ লিখুন!');
+            return;
+        }
+
+        database.ref('requests').push({
+            username: currentUser.name + " (" + currentUser.phone + ")",
+            message: msg,
+            timestamp: Date.now()
+        }).then(() => {
+            alert('আপনার রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
+            document.getElementById('userMsg').value = '';
+        });
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('userDashboard').classList.add('hidden');
+        document.getElementById('authBox').classList.remove('hidden');
+        document.getElementById('loginPhone').value = '';
+        document.getElementById('loginPass').value = '';
+    }
+</script>
+
 </body>
 </html>
