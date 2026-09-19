@@ -10,11 +10,9 @@
         body { background-color: #0b0f19; color: #f8fafc; padding-bottom: 80px; }
         .container { max-width: 500px; margin: auto; padding: 15px; }
         
-        /* Banner Graphics */
         .admin-banner-box { width: 100%; height: 160px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #1e293b; display: none; border: 1px solid #334155; }
         .admin-banner-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Header & Profile */
         .app-header { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .user-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .user-info h3 { font-size: 18px; color: #38bdf8; }
@@ -24,20 +22,17 @@
         .status-pending { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid #eab308; }
         .status-inactive { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #dc2626; }
 
-        /* Balance Grid */
         .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .balance-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; text-align: center; }
         .balance-card span { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px; }
         .balance-card h3 { font-size: 18px; color: #38bdf8; }
 
-        /* Top Action Quick Menu */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
         .action-item { background: #1e293b; border: 1px solid #334155; padding: 12px 4px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
         .action-item:hover { border-color: #38bdf8; }
         .action-item i, .action-item span.emoji-icon { font-size: 20px; display: block; margin-bottom: 5px; }
         .action-item span.btn-label { font-size: 10px; color: #f8fafc; font-weight: 600; word-break: break-word; }
 
-        /* Modal Overlay for "More" Menu */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.3s ease; }
         .modal-overlay.active { visibility: visible; opacity: 1; }
         .modal-content { background: #1e293b; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; border-top: 2px solid #38bdf8; transform: translateY(100%); transition: 0.3s ease; max-height: 80vh; overflow-y: auto; }
@@ -46,11 +41,9 @@
         .modal-header h3 { font-size: 16px; color: #38bdf8; }
         .close-btn { font-size: 20px; color: #94a3b8; cursor: pointer; }
 
-        /* Content Cards */
         .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 15px; }
         .card-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-        /* Forms & Inputs */
         input, button, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 14px; outline: none; }
         input, textarea, select { background: #0f172a; color: #fff; border: 1px solid #334155; }
         input:focus { border-color: #38bdf8; }
@@ -61,10 +54,8 @@
         .btn-danger { background: #dc2626; }
         .btn-tg { background: #0088cc; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: white; font-weight: 600; border-radius: 8px; padding: 12px; margin-top: 8px; text-align: center; }
 
-        /* Notice Box */
         .notice-box { background: rgba(2, 132, 199, 0.15); border: 1px solid #0284c7; color: #38bdf8; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; }
 
-        /* Bottom Navigation Bar */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-around; padding: 10px 0; max-width: 500px; margin: auto; z-index: 1000; }
         .nav-btn { text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; text-decoration: none; width: 20%; }
         .nav-btn i { font-size: 18px; display: block; margin-bottom: 3px; }
@@ -81,12 +72,10 @@
         .job-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; margin-top: 10px; }
         .proof-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 12px; }
 
-        /* Downline Stats Custom Styling */
         .downline-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
         .downline-title { font-size: 14px; font-weight: 700; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 10px; }
         .downline-item { font-size: 12px; color: #cbd5e1; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
 
-        /* Summary Stats Cards Styling */
         .summary-box { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
         .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #1e293b; }
         .summary-row:last-child { border-bottom: none; }
@@ -101,17 +90,14 @@
         <h2 style="color:#38bdf8;">🐲 DRAGON NETWORK</h2>
     </div>
 
-    <!-- Admin Graphics Banner -->
     <div id="adminBannerBox" class="admin-banner-box">
         <img id="adminBannerImg" src="" alt="Dragon Banner">
     </div>
 
-    <!-- Announcement Notice -->
     <div class="notice-box">
         <i class="fa-solid fa-bullhorn"></i> <span id="liveNotice">Welcome to Dragon Network USDT Portal!</span>
     </div>
 
-    <!-- Auth Box (Sign In / Sign Up) -->
     <div id="authBox" class="card">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <button id="tabLoginBtn" style="background:#0284c7;" onclick="switchTab('login')">Sign In</button>
@@ -135,10 +121,7 @@
         </div>
     </div>
 
-    <!-- Main Dashboard -->
     <div id="userDashboard" class="hidden">
-        
-        <!-- Header Info -->
         <div class="app-header">
             <div class="user-info">
                 <div>
@@ -159,7 +142,6 @@
             </div>
         </div>
 
-        <!-- Main Top Bar (4 Main Action Buttons) -->
         <div class="action-grid">
             <div class="action-item" onclick="showSection('activateSection')">
                 <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i>
@@ -179,7 +161,6 @@
             </div>
         </div>
 
-        <!-- Slide Up Popup Modal for "More" Menu Options -->
         <div id="moreModal" class="modal-overlay" onclick="toggleMoreMenu()">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="modal-header">
@@ -223,7 +204,6 @@
             </div>
         </div>
 
-        <!-- Home Section -->
         <div id="homeSection">
             <div class="card" id="vipIncomeCard">
                 <div class="card-title"><i class="fa-solid fa-rocket" style="color:#f59e0b;"></i> VIP High Income Channel</div>
@@ -239,7 +219,6 @@
             </div>
         </div>
 
-        <!-- Micro Jobs Section (Approved Dynamic Jobs) -->
         <div id="microJobSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-briefcase" style="color:#38bdf8;"></i> Approved Micro Jobs</div>
             <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete available jobs posted by users and earn USDT rewards upon approval.</p>
@@ -249,7 +228,6 @@
             </div>
         </div>
 
-        <!-- User Job Post Creation Section -->
         <div id="jobPostSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-plus-circle" style="color:#06b6d4;"></i> Create Job Post</div>
             <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job request. Admin will review and publish it to the Micro Job marketplace.</p>
@@ -261,7 +239,6 @@
             <button class="btn-success" onclick="submitJobPost()">Submit Job Post for Approval</button>
         </div>
 
-        <!-- My Posted Jobs & Proof Review Section -->
         <div id="myPostedJobsSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-list-check" style="color:#10b981;"></i> My Posted Jobs & Proofs</div>
             <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Review worker submissions for your posted jobs and Approve/Reject them.</p>
@@ -271,7 +248,6 @@
             </div>
         </div>
 
-        <!-- User Profile Section -->
         <div id="profileSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-id-card" style="color:#ec4899;"></i> User Profile</div>
             <div style="font-size:13px; color:#94a3b8; line-height:2;">
@@ -282,7 +258,6 @@
             </div>
         </div>
 
-        <!-- Activate Account Section ($3 USDT) -->
         <div id="activateSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> Activate Account ID ($3 USDT)</div>
             
@@ -308,7 +283,6 @@
             </div>
         </div>
 
-        <!-- Deposit USDT Section -->
         <div id="depositSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-wallet" style="color:#38bdf8;"></i> Deposit USDT (BEP20)</div>
             <p style="font-size:12px; color:#94a3b8;">Send USDT to the BEP20 address below:</p>
@@ -318,11 +292,9 @@
             <button class="btn-success" onclick="submitDeposit()">Submit Deposit Request</button>
         </div>
 
-        <!-- Withdraw USDT & Realtime Summary Section -->
         <div id="withdrawSection" class="card hidden">
             <div class="card-title">📋 WITHDRAWAL STATUS & SUMMARY</div>
             
-            <!-- Dynamic Income & Balance Overview -->
             <div class="summary-box">
                 <div class="summary-row">
                     <span class="summary-label">💰 Total Earned Income:</span>
@@ -345,7 +317,6 @@
                 </div>
             </div>
 
-            <!-- Dynamic Withdrawal Breakdown -->
             <div class="summary-box">
                 <div style="font-weight:700; color:#38bdf8; margin-bottom:8px;">📊 Withdrawal Details:</div>
                 <div class="summary-row">
@@ -375,7 +346,6 @@
             </div>
         </div>
 
-        <!-- Referral & Dynamic Downline Stats Section -->
         <div id="referSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-users" style="color:#38bdf8;"></i> 👥 MY DOWNLINE STATS</div>
             
@@ -383,7 +353,6 @@
             <div class="wallet-address-box" id="refLink">Loading referral link...</div>
 
             <div style="margin-top:15px;">
-                <!-- Partner Gen 1 Info Card -->
                 <div class="downline-card">
                     <div class="downline-title">
                         🔹 1. Partner (Gen 1 Active): <span id="gen1Count" style="color:#4ade80;">0</span> Person(s)
@@ -394,7 +363,6 @@
                     </div>
                 </div>
 
-                <!-- Total Team Info Card -->
                 <div class="downline-card">
                     <div class="downline-title" style="color:#a855f7; border-bottom:none; margin-bottom:0;">
                         🔹 Team (Gen 1 - 10 Downline Active): <span id="totalTeamCount" style="color:#4ade80;">0</span> Person(s)
@@ -402,7 +370,6 @@
                 </div>
             </div>
 
-            <!-- Referral Income Plan Overview -->
             <div style="margin-top:20px; border-top:1px solid #334155; padding-top:12px;">
                 <h4 style="font-size:13px; color:#38bdf8; margin-bottom:8px;">Referral Income Plan:</h4>
                 <div class="level-list">
@@ -420,7 +387,6 @@
             </div>
         </div>
 
-        <!-- Support Section -->
         <div id="supportSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-headset" style="color:#38bdf8;"></i> Customer Support</div>
             
@@ -440,7 +406,6 @@
     </div>
 </div>
 
-<!-- Bottom Navigation Bar -->
 <div id="bottomNav" class="bottom-nav hidden">
     <div class="nav-btn active" id="btnHome" onclick="navTab('homeSection', this)"><i class="fa-solid fa-house"></i>Home</div>
     <div class="nav-btn" id="btnAct" onclick="navTab('activateSection', this)"><i class="fa-solid fa-bolt"></i>Activate</div>
@@ -449,7 +414,6 @@
     <div class="nav-btn" id="btnSup" onclick="navTab('supportSection', this)"><i class="fa-solid fa-headset"></i>Support</div>
 </div>
 
-<!-- Firebase SDK Compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -464,14 +428,11 @@
       databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
     };
 
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
     let currentUser = null;
 
-    // Auto Login Session check on Reload
     window.addEventListener('DOMContentLoaded', () => {
         const savedPhone = localStorage.getItem('dragon_user_phone');
         if (savedPhone) {
@@ -486,7 +447,6 @@
         }
     });
 
-    // Load Live Notice & Admin Banner
     database.ref('site/notice').on('value', (snapshot) => {
         if(snapshot.val()) {
             document.getElementById('liveNotice').innerText = snapshot.val();
@@ -529,10 +489,7 @@
         const pass = document.getElementById('regPass').value.trim();
         const ref = document.getElementById('regRef').value.trim();
 
-        if(!name || !phone || !pass) {
-            alert('Please complete all fields!');
-            return;
-        }
+        if(!name || !phone || !pass) return alert('Please complete all fields!');
 
         const userRef = database.ref('users/' + phone);
         userRef.once('value').then((snapshot) => {
@@ -548,8 +505,6 @@
                     alert('Registration Successful! Please Sign In.');
                     switchTab('login');
                     document.getElementById('loginPhone').value = phone;
-                }).catch(err => {
-                    alert('Error: ' + err.message);
                 });
             }
         });
@@ -559,10 +514,7 @@
         const phone = document.getElementById('loginPhone').value.trim();
         const pass = document.getElementById('loginPass').value.trim();
 
-        if(!phone || !pass) {
-            alert('Enter phone and password!');
-            return;
-        }
+        if(!phone || !pass) return alert('Enter phone and password!');
 
         database.ref('users/' + phone).once('value').then((snapshot) => {
             if(snapshot.exists() && snapshot.val().pass === pass) {
@@ -572,8 +524,6 @@
             } else {
                 alert('Invalid phone or password!');
             }
-        }).catch(err => {
-            alert('Login failed: ' + err.message);
         });
     }
 
@@ -582,7 +532,6 @@
         document.getElementById('userDashboard').classList.remove('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
 
-        // Realtime User Data Listener
         database.ref('users/' + currentUser.phone).on('value', (snapshot) => {
             if(snapshot.exists()) {
                 currentUser = snapshot.val();
@@ -590,16 +539,9 @@
             }
         });
 
-        // Load Realtime Downline Statistics
         loadDownlineStats();
-
-        // Listen for Approved Jobs to Display in Micro Job Section
         loadApprovedJobs();
-
-        // Listen for User's Own Jobs & Submitted Proofs
         loadMyJobPostsAndProofs();
-
-        // Listen for Realtime Withdrawal Status & Calculate Summary Breakdown
         loadWithdrawalSummary();
     }
 
@@ -657,7 +599,6 @@
         }
     }
 
-    // Dynamic Withdrawal Breakdown & Summary Calculation Engine
     function loadWithdrawalSummary() {
         database.ref('requests').orderByChild('phone').equalTo(currentUser.phone).on('value', (snapshot) => {
             let totalApproved = 0;
@@ -668,17 +609,12 @@
                 snapshot.forEach(child => {
                     const req = child.val();
                     if(req.type === 'Withdraw') {
-                        // Extract numeric withdrawal amount from details string
                         const match = req.details ? req.details.match(/Amount:\s*([\d.]+)/) : null;
                         const amt = match ? parseFloat(match[1]) : 0;
 
-                        if(req.status === 'APPROVED') {
-                            totalApproved += amt;
-                        } else if(req.status === 'REJECTED') {
-                            totalRejected += amt;
-                        } else if(req.status === 'PENDING') {
-                            hasPending = true;
-                        }
+                        if(req.status === 'APPROVED') totalApproved += amt;
+                        else if(req.status === 'REJECTED') totalRejected += amt;
+                        else if(req.status === 'PENDING') hasPending = true;
                     }
                 });
             }
@@ -688,7 +624,6 @@
             const totalEarned = refEarnings + bonusEarnings;
             const availableBal = parseFloat(currentUser.balance || 0);
 
-            // Update Summary Card Labels
             document.getElementById('summaryTotalEarned').innerText = '$' + totalEarned.toFixed(2) + ' USDT';
             document.getElementById('summaryRefEarnings').innerText = '$' + refEarnings.toFixed(2) + ' USDT';
             document.getElementById('summaryBonus').innerText = '$' + bonusEarnings.toFixed(2) + ' USDT';
@@ -713,7 +648,6 @@
         });
     }
 
-    // Dynamic 10-Generation Downline Calculation Engine
     function loadDownlineStats() {
         database.ref('users').on('value', (snapshot) => {
             if(!snapshot.exists()) return;
@@ -723,7 +657,6 @@
             let currentLevelParents = [currentUser.phone];
             let totalTeamCount = 0;
 
-            // Loop through 10 generations recursively
             for(let level = 1; level <= 10; level++) {
                 let nextLevelParents = [];
 
@@ -734,9 +667,7 @@
 
                         if(u.status === 'ACTIVE') {
                             totalTeamCount++;
-                            if(level === 1) {
-                                gen1ActiveList.push(u);
-                            }
+                            if(level === 1) gen1ActiveList.push(u);
                         }
                     }
                 });
@@ -745,7 +676,6 @@
                 if(currentLevelParents.length === 0) break;
             }
 
-            // Render Gen 1 Data
             document.getElementById('gen1Count').innerText = gen1ActiveList.length;
             const listContainer = document.getElementById('gen1ListContainer');
             listContainer.innerHTML = '';
@@ -764,7 +694,6 @@
                 });
             }
 
-            // Render Total Team Data
             document.getElementById('totalTeamCount').innerText = totalTeamCount;
         });
     }
@@ -784,16 +713,13 @@
         if(btnElem) btnElem.classList.add('active');
     }
 
-    // Submit Job Post for Admin Approval
     function submitJobPost() {
         const title = document.getElementById('postTitle').value.trim();
         const link = document.getElementById('postLink').value.trim();
         const reward = parseFloat(document.getElementById('postReward').value);
         const instruction = document.getElementById('postInstruction').value.trim();
 
-        if(!title || !link || !reward) {
-            return alert('Please fill in Job Title, Link, and Reward!');
-        }
+        if(!title || !link || !reward) return alert('Please fill in Job Title, Link, and Reward!');
 
         const jobId = database.ref('job_posts').push().key;
 
@@ -816,7 +742,6 @@
         });
     }
 
-    // Load Approved Jobs for Micro Job Section
     function loadApprovedJobs() {
         database.ref('job_posts').orderByChild('status').equalTo('APPROVED').on('value', (snapshot) => {
             const container = document.getElementById('microJobsListContainer');
@@ -829,7 +754,7 @@
 
             snapshot.forEach(child => {
                 const job = child.val();
-                const jobHtml = `
+                container.innerHTML += `
                     <div class="job-card">
                         <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-tasks"></i> ${job.title}</h4>
                         <p style="font-size:11px; color:#94a3b8;">${job.instruction}</p>
@@ -841,23 +766,17 @@
                         <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobWork('${job.jobId}', '${job.creatorPhone}', ${job.reward})">Submit Job Proof</button>
                     </div>
                 `;
-                container.innerHTML += jobHtml;
             });
         });
     }
 
-    // Worker Submits Job Proof
     function submitJobWork(jobId, creatorPhone, reward) {
-        if(currentUser.status !== 'ACTIVE') {
-            return alert('Please activate your ID with $3 USDT to do micro jobs!');
-        }
+        if(currentUser.status !== 'ACTIVE') return alert('Please activate your ID with $3 USDT to do micro jobs!');
 
         const textProof = document.getElementById(`proofText_${jobId}`).value.trim();
         const imgProof = document.getElementById(`proofImg_${jobId}`).value.trim();
 
-        if(!textProof && !imgProof) {
-            return alert('Please provide either text details or screenshot link as proof!');
-        }
+        if(!textProof && !imgProof) return alert('Please provide either text details or screenshot link as proof!');
 
         const proofId = database.ref(`job_posts/${jobId}/proofs`).push().key;
 
@@ -877,7 +796,6 @@
         });
     }
 
-    // Load User's Posted Jobs & Submissions to Approve/Reject
     function loadMyJobPostsAndProofs() {
         database.ref('job_posts').orderByChild('creatorPhone').equalTo(currentUser.phone).on('value', (snapshot) => {
             const container = document.getElementById('myJobsContainer');
@@ -928,23 +846,15 @@
         });
     }
 
-    // Job Creator Approves Proof & Transfers Balance
     function approveProof(jobId, proofId, workerPhone, reward) {
         database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
-
-        // Add Balance to Worker
-        database.ref(`users/${workerPhone}/balance`).transaction((curr) => {
-            return (curr || 0) + parseFloat(reward);
-        }).then(() => {
+        database.ref(`users/${workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(reward)).then(() => {
             alert('Proof Approved! Reward transferred to worker balance.');
         });
     }
 
-    // Job Creator Rejects Proof
     function rejectProof(jobId, proofId) {
-        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('REJECTED').then(() => {
-            alert('Proof Rejected.');
-        });
+        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('REJECTED').then(() => alert('Proof Rejected.'));
     }
 
     function submitActivation() {
@@ -972,14 +882,17 @@
     }
 
     function submitDeposit() {
-        const amt = document.getElementById('depAmount').value;
+        const amt = parseFloat(document.getElementById('depAmount').value);
         const tx = document.getElementById('depTxHash').value.trim();
-        if(!amt || !tx) return alert('Enter deposit amount and TxHash!');
+        if(!amt || amt <= 0 || !tx) return alert('Enter valid deposit amount and TxHash!');
 
         database.ref('requests').push({
             type: 'Deposit',
+            phone: currentUser.phone,
             username: currentUser.name + " (" + currentUser.phone + ")",
             details: `Amount: ${amt} USDT (BEP20) | TxID: ${tx}`,
+            amount: amt,
+            status: 'PENDING',
             timestamp: Date.now()
         }).then(() => {
             alert('Deposit request submitted to admin!');
