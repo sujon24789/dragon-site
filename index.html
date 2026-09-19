@@ -30,17 +30,17 @@
         .balance-card span { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px; }
         .balance-card h3 { font-size: 18px; color: #38bdf8; }
 
-        /* Top Action Quick Menu (4 Main Buttons + 1 More Button) */
+        /* Top Action Quick Menu (4 Main Buttons) */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
         .action-item { background: #1e293b; border: 1px solid #334155; padding: 12px 4px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
         .action-item:hover { border-color: #38bdf8; }
-        .action-item i { font-size: 18px; color: #38bdf8; display: block; margin-bottom: 5px; }
-        .action-item span { font-size: 10px; color: #f8fafc; font-weight: 600; word-break: break-word; }
+        .action-item i, .action-item span.emoji-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+        .action-item span.btn-label { font-size: 10px; color: #f8fafc; font-weight: 600; word-break: break-word; }
 
         /* Modal Overlay for "More" Menu */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.3s ease; }
         .modal-overlay.active { visibility: visible; opacity: 1; }
-        .modal-content { background: #1e293b; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; border-top: 2px solid #38bdf8; transform: translateY(100%); transition: 0.3s ease; }
+        .modal-content { background: #1e293b; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; border-top: 2px solid #38bdf8; transform: translateY(100%); transition: 0.3s ease; max-height: 80vh; overflow-y: auto; }
         .modal-overlay.active .modal-content { transform: translateY(0); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-header h3 { font-size: 16px; color: #38bdf8; }
@@ -146,23 +146,23 @@
             </div>
         </div>
 
-        <!-- Main Action Bar (4 Quick Buttons + More Button) -->
+        <!-- Main Top Bar (4 Main Action Buttons) -->
         <div class="action-grid">
             <div class="action-item" onclick="showSection('activateSection')">
                 <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i>
-                <span>Activate ID</span>
+                <span class="btn-label">Activate ID</span>
             </div>
             <div class="action-item" onclick="showSection('depositSection')">
                 <i class="fa-solid fa-wallet" style="color:#38bdf8;"></i>
-                <span>Deposit</span>
+                <span class="btn-label">Deposit</span>
             </div>
             <div class="action-item" onclick="showSection('withdrawSection')">
-                <i class="fa-solid fa-money-bill-transfer" style="color:#10b981;"></i>
-                <span>Withdraw</span>
+                <span class="emoji-icon">💸</span>
+                <span class="btn-label">Withdraw</span>
             </div>
             <div class="action-item" onclick="toggleMoreMenu()">
                 <i class="fa-solid fa-ellipsis-vertical" style="color:#a855f7;"></i>
-                <span>More</span>
+                <span class="btn-label">More</span>
             </div>
         </div>
 
@@ -176,68 +176,43 @@
                 <div class="action-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="action-item" onclick="showSection('activateSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i>
-                        <span>Activate ID</span>
+                        <span class="btn-label">Activate ID</span>
                     </div>
                     <div class="action-item" onclick="showSection('depositSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-wallet" style="color:#38bdf8;"></i>
-                        <span>Deposit</span>
+                        <span class="btn-label">Deposit</span>
                     </div>
                     <div class="action-item" onclick="showSection('withdrawSection'); toggleMoreMenu();">
-                        <i class="fa-solid fa-money-bill-transfer" style="color:#10b981;"></i>
-                        <span>Withdraw</span>
+                        <span class="emoji-icon">💸</span>
+                        <span class="btn-label">Withdraw</span>
                     </div>
                     <div class="action-item" onclick="showSection('referSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-users" style="color:#a855f7;"></i>
-                        <span>10-Gen Refer</span>
+                        <span class="btn-label">10-Gen Refer</span>
                     </div>
                     <div class="action-item" onclick="showSection('profileSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-user" style="color:#ec4899;"></i>
-                        <span>Profile</span>
+                        <span class="btn-label">Profile</span>
                     </div>
                     <div class="action-item" onclick="showSection('jobPostSection'); toggleMoreMenu();">
                         <i class="fa-solid fa-folder-plus" style="color:#06b6d4;"></i>
-                        <span>Add Job Post</span>
+                        <span class="btn-label">Add Job Post</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('googleReviewSection'); toggleMoreMenu();">
+                        <i class="fa-brands fa-google" style="color:#ea4335;"></i>
+                        <span class="btn-label">Google Review</span>
+                    </div>
+                    <div class="action-item" onclick="showSection('microJobSection'); toggleMoreMenu();">
+                        <i class="fa-solid fa-list-check" style="color:#38bdf8;"></i>
+                        <span class="btn-label">Micro Job</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tab Content Sections -->
-        
-        <!-- Home / Tasks Section -->
+        <!-- Home Section -->
         <div id="homeSection">
-            
-            <!-- Google Reviews Section -->
-            <div class="card">
-                <div class="card-title"><i class="fa-brands fa-google" style="color:#ea4335;"></i> Google Review Tasks</div>
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Give 5-Star reviews on Google Maps and submit proof URL to earn USDT.</p>
-                
-                <div class="job-card">
-                    <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-location-dot"></i> Google Maps 5-Star Review</h4>
-                    <p style="font-size:11px; color:#94a3b8;">Click link, post a 5-star review with good feedback, upload screenshot proof.</p>
-                    <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.20 USDT</p>
-                    
-                    <input type="text" id="gReviewProof" placeholder="Screenshot Link (Imgur / PostImage URL)">
-                    <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobProof('Google Review Task', 'gReviewProof')">Submit Review Proof</button>
-                </div>
-            </div>
-
-            <!-- Micro Jobs Section -->
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-list-check" style="color:#38bdf8;"></i> Micro Jobs Tasks</div>
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete simple online tasks like Telegram joining, social media likes, or app reviews.</p>
-                
-                <div class="job-card">
-                    <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-brands fa-telegram"></i> Telegram Channel Join & Share</h4>
-                    <p style="font-size:11px; color:#94a3b8;">Join official partner channel, take a screenshot, and submit proof.</p>
-                    <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.10 USDT</p>
-                    
-                    <input type="text" id="microJobProof" placeholder="Screenshot Link (Imgur / PostImage URL)">
-                    <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobProof('Micro Job Task', 'microJobProof')">Submit Job Proof</button>
-                </div>
-            </div>
-
-            <!-- VIP Income Channel (Locked for Inactive IDs) -->
+            <!-- VIP Income Channel -->
             <div class="card" id="vipIncomeCard">
                 <div class="card-title"><i class="fa-solid fa-rocket" style="color:#f59e0b;"></i> VIP High Income Channel</div>
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Join our VIP Telegram list after account activation to unlock extra free income channels:</p>
@@ -249,6 +224,36 @@
                 <a id="vipTgLink" href="https://t.me/addlist/1nxTqgTvDIcxYzA1" target="_blank" class="btn-tg hidden" style="background:linear-gradient(135deg, #16a34a, #15803d); width:100%;">
                     <i class="fa-brands fa-telegram"></i> Join VIP High Income Channel
                 </a>
+            </div>
+        </div>
+
+        <!-- Google Reviews Section (Inside More Option) -->
+        <div id="googleReviewSection" class="card hidden">
+            <div class="card-title"><i class="fa-brands fa-google" style="color:#ea4335;"></i> Google Review Tasks</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Give 5-Star reviews on Google Maps and submit proof URL to earn USDT.</p>
+            
+            <div class="job-card">
+                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-location-dot"></i> Google Maps 5-Star Review</h4>
+                <p style="font-size:11px; color:#94a3b8;">Click link, post a 5-star review with good feedback, upload screenshot proof.</p>
+                <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.20 USDT</p>
+                
+                <input type="text" id="gReviewProof" placeholder="Screenshot Link (Imgur / PostImage URL)">
+                <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobProof('Google Review Task', 'gReviewProof')">Submit Review Proof</button>
+            </div>
+        </div>
+
+        <!-- Micro Jobs Section (Inside More Option) -->
+        <div id="microJobSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-list-check" style="color:#38bdf8;"></i> Micro Jobs Tasks</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Complete simple online tasks like Telegram joining, social media likes, or app reviews.</p>
+            
+            <div class="job-card">
+                <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-brands fa-telegram"></i> Telegram Channel Join & Share</h4>
+                <p style="font-size:11px; color:#94a3b8;">Join official partner channel, take a screenshot, and submit proof.</p>
+                <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.10 USDT</p>
+                
+                <input type="text" id="microJobProof" placeholder="Screenshot Link (Imgur / PostImage URL)">
+                <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobProof('Micro Job Task', 'microJobProof')">Submit Job Proof</button>
             </div>
         </div>
 
@@ -313,7 +318,7 @@
 
         <!-- Withdraw USDT Section -->
         <div id="withdrawSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-money-bill-transfer" style="color:#10b981;"></i> Withdraw USDT (BEP20)</div>
+            <div class="card-title">💸 Withdraw USDT (BEP20)</div>
             
             <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">* Note: Your account must be ACTIVE and have sufficient balance to request withdrawals.</p>
 
@@ -600,7 +605,7 @@
     }
 
     function showSection(sectionId) {
-        ['homeSection', 'activateSection', 'depositSection', 'withdrawSection', 'referSection', 'profileSection', 'jobPostSection', 'supportSection'].forEach(id => {
+        ['homeSection', 'googleReviewSection', 'microJobSection', 'activateSection', 'depositSection', 'withdrawSection', 'referSection', 'profileSection', 'jobPostSection', 'supportSection'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.classList.add('hidden');
         });
