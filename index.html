@@ -230,7 +230,7 @@
 
         <div id="jobPostSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-plus-circle" style="color:#06b6d4;"></i> Create Job Post</div>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job request. Total cost = (Workers × Reward) + $0.007 tax per worker. Balance will be deducted immediately.</p>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Total cost = (Workers × Reward) + $0.007 tax per worker. Balance will be deducted immediately.</p>
 
             <input type="text" id="postTitle" placeholder="Job Title (e.g. Telegram Channel Join)">
             <input type="text" id="postLink" placeholder="Target Link / URL">
@@ -477,10 +477,10 @@
             document.getElementById('tabLoginBtn').style.background = '#0284c7';
             document.getElementById('tabRegBtn').style.background = '#334155';
         } else {
-            document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('regForm').classList.remove('hidden');
-            document.getElementById('tabLoginBtn').style.background = '#334155';
+            document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('tabRegBtn').style.background = '#0284c7';
+            document.getElementById('tabLoginBtn').style.background = '#334155';
         }
     }
 
@@ -714,7 +714,6 @@
         if(btnElem) btnElem.classList.add('active');
     }
 
-    // Submit Job Post with Immediate Balance Deduction (Including $0.007 tax per worker)
     function submitJobPost() {
         const title = document.getElementById('postTitle').value.trim();
         const link = document.getElementById('postLink').value.trim();
@@ -726,7 +725,6 @@
             return alert('Please fill in all job details correctly!');
         }
 
-        // Total Cost Calculation: (Workers * Reward) + (Workers * 0.007 Tax)
         const totalCost = (workers * reward) + (workers * 0.007);
         const currentBal = parseFloat(currentUser.balance || 0);
 
@@ -736,7 +734,6 @@
 
         const jobId = database.ref('job_posts').push().key;
 
-        // Deduct balance from user account immediately upon pending submission
         database.ref('users/' + currentUser.phone + '/balance').transaction((curr) => {
             return (curr || 0) - totalCost;
         }).then(() => {
@@ -747,6 +744,7 @@
                 title: title,
                 link: link,
                 workers: workers,
+                completedCount: 0,
                 reward: reward,
                 totalCost: totalCost,
                 instruction: instruction || 'N/A',
@@ -766,6 +764,7 @@
         });
     }
 
+    // Load Approved Jobs (Hides jobs already completed by user or fully finished)
     function loadApprovedJobs() {
         database.ref('job_posts').orderByChild('status').equalTo('APPROVED').on('value', (snapshot) => {
             const container = document.getElementById('microJobsListContainer');
@@ -776,25 +775,51 @@
                 return;
             }
 
+            let availableJobsCount = 0;
+
             snapshot.forEach(child => {
                 const job = child.val();
+                const completedCount = job.completedCount || 0;
+                const maxWorkers = job.workers || 1;
+
+                // Check if job target completed quota reached or user already completed this job
+                let alreadyCompleted = false;
+                if(job.proofs) {
+                    Object.values(job.proofs).forEach(p => {
+                        if(p.workerPhone === currentUser.phone) {
+                            alreadyCompleted = true;
+                        }
+                    });
+                }
+
+                // If quota is reached or user already did it, don't show it to this user
+                if(completedCount >= maxWorkers || alreadyCompleted || job.creatorPhone === currentUser.phone) {
+                    return;
+                }
+
+                availableJobsCount++;
                 container.innerHTML += `
                     <div class="job-card">
                         <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-solid fa-tasks"></i> ${job.title}</h4>
                         <p style="font-size:11px; color:#94a3b8;">${job.instruction}</p>
                         <p style="font-size:11px; color:#38bdf8; margin-top:4px;"><b>Link:</b> <a href="${job.link}" target="_blank" style="color:#38bdf8;">${job.link}</a></p>
+                        <p style="font-size:11px; color:#facc15; margin-top:2px;">Progress: ${completedCount}/${maxWorkers} Completed</p>
                         <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $${parseFloat(job.reward).toFixed(2)} USDT</p>
                         
                         <input type="text" id="proofText_${job.jobId}" placeholder="Task Text Details / Notes">
                         <input type="text" id="proofImg_${job.jobId}" placeholder="Screenshot Link (Imgur / PostImage URL)">
-                        <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobWork('${job.jobId}', '${job.creatorPhone}', ${job.reward})">Submit Job Proof</button>
+                        <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitJobWork('${job.jobId}', ${job.reward})">Submit Job Proof</button>
                     </div>
                 `;
             });
+
+            if(availableJobsCount === 0) {
+                container.innerHTML = '<p style="font-size:12px; color:#94a3b8; text-align:center;">No active micro jobs available for you right now.</p>';
+            }
         });
     }
 
-    function submitJobWork(jobId, creatorPhone, reward) {
+    function submitJobWork(jobId, reward) {
         if(currentUser.status !== 'ACTIVE') return alert('Please activate your ID with $3 USDT to do micro jobs!');
 
         const textProof = document.getElementById(`proofText_${jobId}`).value.trim();
@@ -802,21 +827,37 @@
 
         if(!textProof && !imgProof) return alert('Please provide either text details or screenshot link as proof!');
 
-        const proofId = database.ref(`job_posts/${jobId}/proofs`).push().key;
+        // Check again if user already submitted proof for this job
+        database.ref(`job_posts/${jobId}/proofs`).once('value').then((snapshot) => {
+            let alreadySubmitted = false;
+            if(snapshot.exists()) {
+                snapshot.forEach(child => {
+                    if(child.val().workerPhone === currentUser.phone) {
+                        alreadySubmitted = true;
+                    }
+                });
+            }
 
-        database.ref(`job_posts/${jobId}/proofs/${proofId}`).set({
-            proofId: proofId,
-            workerPhone: currentUser.phone,
-            workerName: currentUser.name,
-            textProof: textProof || 'N/A',
-            imgProof: imgProof || 'N/A',
-            reward: reward,
-            status: 'PENDING',
-            submittedAt: Date.now()
-        }).then(() => {
-            alert('Job proof submitted to job poster! Waiting for creator approval.');
-            document.getElementById(`proofText_${jobId}`).value = '';
-            document.getElementById(`proofImg_${jobId}`).value = '';
+            if(alreadySubmitted) {
+                return alert('You have already submitted proof for this job! You cannot submit twice.');
+            }
+
+            const proofId = database.ref(`job_posts/${jobId}/proofs`).push().key;
+
+            database.ref(`job_posts/${jobId}/proofs/${proofId}`).set({
+                proofId: proofId,
+                workerPhone: currentUser.phone,
+                workerName: currentUser.name,
+                textProof: textProof || 'N/A',
+                imgProof: imgProof || 'N/A',
+                reward: reward,
+                status: 'PENDING',
+                submittedAt: Date.now()
+            }).then(() => {
+                alert('Job proof submitted successfully! Waiting for creator approval.');
+                document.getElementById(`proofText_${jobId}`).value = '';
+                document.getElementById(`proofImg_${jobId}`).value = '';
+            });
         });
     }
 
@@ -833,8 +874,9 @@
             snapshot.forEach(child => {
                 const job = child.val();
                 let statusBadge = `<span style="color:#facc15;">[PENDING ADMIN REVIEW]</span>`;
-                if(job.status === 'APPROVED') statusBadge = `<span style="color:#4ade80;">[APPROVED & LIVE]</span>`;
+                if(job.status === 'APPROVED') statusBadge = `<span style="color:#4ade80;">[APPROVED & LIVE] (${job.completedCount || 0}/${job.workers} Done)</span>`;
                 else if(job.status === 'REJECTED') statusBadge = `<span style="color:#f87171;">[REJECTED & REFUNDED]</span>`;
+                else if(job.status === 'COMPLETED') statusBadge = `<span style="color:#38bdf8;">[COMPLETED & REMOVED]</span>`;
 
                 let proofsHtml = '';
                 if(job.proofs) {
@@ -871,10 +913,27 @@
         });
     }
 
+    // Creator approves proof, pays worker, updates completed count, and auto removes if quota reached
     function approveProof(jobId, proofId, workerPhone, reward) {
-        database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
-        database.ref(`users/${workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(reward)).then(() => {
-            alert('Proof Approved! Reward transferred to worker balance.');
+        database.ref(`job_posts/${jobId}`).once('value').then((snapshot) => {
+            if(!snapshot.exists()) return;
+            const job = snapshot.val();
+            const currentCompleted = (job.completedCount || 0) + 1;
+            const maxWorkers = job.workers || 1;
+
+            database.ref(`job_posts/${jobId}/proofs/${proofId}/status`).set('APPROVED');
+            
+            // Increment completed count and check if quota completed
+            let updates = { completedCount: currentCompleted };
+            if(currentCompleted >= maxWorkers) {
+                updates.status = 'COMPLETED'; // Auto remove from marketplace
+            }
+            database.ref(`job_posts/${jobId}`).update(updates);
+
+            // Transfer reward to worker balance
+            database.ref(`users/${workerPhone}/balance`).transaction((curr) => (curr || 0) + parseFloat(reward)).then(() => {
+                alert('Proof Approved! Reward transferred to worker balance.');
+            });
         });
     }
 
