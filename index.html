@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Network - LifeGoodBD Style</title>
+    <title>Dragon Network - USDT Portal</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -55,11 +55,9 @@
         .nav-btn i { font-size: 18px; display: block; margin-bottom: 3px; }
         .nav-btn.active { color: #38bdf8; font-weight: bold; }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .wallet-address-box { background: #0f172a; border: 1px dashed #0284c7; padding: 10px; border-radius: 8px; font-size: 12px; word-break: break-all; color: #38bdf8; text-align: center; margin: 10px 0; }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -190,11 +188,15 @@
 
 <!-- Bottom Navigation Bar -->
 <div id="bottomNav" class="bottom-nav hidden">
-    <div class="nav-btn active" onclick="navTab('homeSection', this)"><i class="fa-solid fa-house"></i>Home</div>
-    <div class="nav-btn" onclick="navTab('depositSection', this)"><i class="fa-solid fa-wallet"></i>Deposit</div>
-    <div class="nav-btn" onclick="navTab('referSection', this)"><i class="fa-solid fa-users"></i>Refer</div>
-    <div class="nav-btn" onclick="navTab('supportSection', this)"><i class="fa-solid fa-user"></i>Profile</div>
+    <div class="nav-btn active" id="btnHome" onclick="navTab('homeSection', this)"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="nav-btn" id="btnDep" onclick="navTab('depositSection', this)"><i class="fa-solid fa-wallet"></i>Deposit</div>
+    <div class="nav-btn" id="btnRef" onclick="navTab('referSection', this)"><i class="fa-solid fa-users"></i>Refer</div>
+    <div class="nav-btn" id="btnSup" onclick="navTab('supportSection', this)"><i class="fa-solid fa-headset"></i>Support</div>
 </div>
+
+<!-- Firebase SDK Compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <script>
     const firebaseConfig = {
@@ -207,13 +209,18 @@
       databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const database = firebase.database();
 
     let currentUser = null;
 
+    // Load Live Notice
     database.ref('site/notice').on('value', (snapshot) => {
-        document.getElementById('liveNotice').innerText = snapshot.val() || 'Welcome to Dragon Network USDT Portal!';
+        if(snapshot.val()) {
+            document.getElementById('liveNotice').innerText = snapshot.val();
+        }
     });
 
     function switchTab(type) {
@@ -236,21 +243,27 @@
         const pass = document.getElementById('regPass').value.trim();
         const ref = document.getElementById('regRef').value.trim();
 
-        if(!name || !phone || !pass) return alert('Please complete all fields!');
+        if(!name || !phone || !pass) {
+            alert('Please complete all fields!');
+            return;
+        }
 
         const userRef = database.ref('users/' + phone);
         userRef.once('value').then((snapshot) => {
             if(snapshot.exists()) {
                 alert('Phone number already registered!');
             } else {
-                userRef.set({
+                const userData = {
                     name: name, phone: phone, pass: pass,
                     referredBy: ref || 'Direct', status: 'INACTIVE',
                     balance: 0.00, commission: 0.00, joinedAt: Date.now()
-                }).then(() => {
-                    alert('Registration Successful! Please Login.');
+                };
+                userRef.set(userData).then(() => {
+                    alert('Registration Successful! Please Sign In.');
                     switchTab('login');
                     document.getElementById('loginPhone').value = phone;
+                }).catch(err => {
+                    alert('Error: ' + err.message);
                 });
             }
         });
@@ -260,7 +273,10 @@
         const phone = document.getElementById('loginPhone').value.trim();
         const pass = document.getElementById('loginPass').value.trim();
 
-        if(!phone || !pass) return alert('Enter phone and password!');
+        if(!phone || !pass) {
+            alert('Enter phone and password!');
+            return;
+        }
 
         database.ref('users/' + phone).once('value').then((snapshot) => {
             if(snapshot.exists() && snapshot.val().pass === pass) {
@@ -269,6 +285,8 @@
             } else {
                 alert('Invalid phone or password!');
             }
+        }).catch(err => {
+            alert('Login failed: ' + err.message);
         });
     }
 
@@ -286,19 +304,23 @@
         const statusElem = document.getElementById('accountStatus');
         statusElem.innerText = currentUser.status || 'INACTIVE';
         statusElem.className = 'status-badge ' + (currentUser.status === 'ACTIVE' ? 'status-active' : 'status-inactive');
+
+        showSection('homeSection');
     }
 
     function showSection(sectionId) {
         ['homeSection', 'depositSection', 'withdrawSection', 'referSection', 'supportSection'].forEach(id => {
-            document.getElementById(id).classList.add('hidden');
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
         });
-        document.getElementById(sectionId).classList.remove('hidden');
+        const target = document.getElementById(sectionId);
+        if(target) target.classList.remove('hidden');
     }
 
     function navTab(sectionId, btnElem) {
         showSection(sectionId);
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        btnElem.classList.add('active');
+        if(btnElem) btnElem.classList.add('active');
     }
 
     function submitDeposit() {
