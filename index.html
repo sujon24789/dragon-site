@@ -1,84 +1,369 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeGoodBD Style - Dragon Network</title>
+    <title>Dragon Network - LifeGoodBD Style</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background-color: #f1f5f9; color: #334155; padding-bottom: 70px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b0f19; color: #f8fafc; padding-bottom: 80px; }
+        .container { max-width: 500px; margin: auto; padding: 15px; }
         
-        /* Header */
-        .app-header { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 20px 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
-        .user-profile { display: flex; align-items: center; justify-content: space-between; }
+        /* Header & Profile */
+        .app-header { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .user-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .user-info h3 { font-size: 18px; color: #38bdf8; }
         .user-info p { font-size: 12px; color: #94a3b8; }
-        .balance-card { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px; margin-top: 15px; backdrop-filter: blur(5px); display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .status-active { background: rgba(22, 163, 74, 0.2); color: #4ade80; border: 1px solid #16a34a; }
+        .status-inactive { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #dc2626; }
 
-        /* Container */
-        .container { padding: 15px; max-width: 500px; margin: auto; }
+        /* Balance Grid */
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .balance-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; text-align: center; }
+        .balance-card span { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px; }
+        .balance-card h3 { font-size: 18px; color: #38bdf8; }
 
-        /* Quick Grid */
-        .grid-menu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 15px 0; }
-        .menu-item { background: #fff; padding: 12px 5px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
-        .menu-item i { font-size: 22px; color: #0284c7; margin-bottom: 5px; display: block; }
-        .menu-item span { font-size: 11px; font-weight: 600; color: #475569; }
+        /* Quick Action Menu */
+        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .action-item { background: #1e293b; border: 1px solid #334155; padding: 12px 5px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .action-item:hover { border-color: #38bdf8; }
+        .action-item i { font-size: 20px; color: #38bdf8; display: block; margin-bottom: 6px; }
+        .action-item span { font-size: 11px; color: #f8fafc; font-weight: 600; }
 
-        /* Cards */
-        .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card-title { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        /* Content Cards */
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 15px; }
+        .card-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2e8f0; max-width: 500px; margin: auto; }
-        .nav-item { text-align: center; color: #64748b; font-size: 11px; text-decoration: none; }
-        .nav-item i { font-size: 18px; display: block; margin-bottom: 2px; }
-        .nav-item.active { color: #0284c7; font-weight: 700; }
+        /* Forms & Inputs */
+        input, button, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 14px; outline: none; }
+        input, textarea, select { background: #0f172a; color: #fff; border: 1px solid #334155; }
+        input:focus { border-color: #38bdf8; }
+        button { background: #0284c7; color: white; font-weight: 600; cursor: pointer; }
+        button:hover { background: #0369a1; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .btn-danger { background: #dc2626; }
+
+        /* Notice Box */
+        .notice-box { background: rgba(2, 132, 199, 0.15); border: 1px solid #0284c7; color: #38bdf8; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-around; padding: 10px 0; max-width: 500px; margin: auto; z-index: 1000; }
+        .nav-btn { text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; text-decoration: none; width: 25%; }
+        .nav-btn i { font-size: 18px; display: block; margin-bottom: 3px; }
+        .nav-btn.active { color: #38bdf8; font-weight: bold; }
+
+        .hidden { display: none; }
+        .wallet-address-box { background: #0f172a; border: 1px dashed #0284c7; padding: 10px; border-radius: 8px; font-size: 12px; word-break: break-all; color: #38bdf8; text-align: center; margin: 10px 0; }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <div class="app-header">
-        <div class="user-profile">
+    <div style="text-align:center; margin-bottom:15px;">
+        <h2 style="color:#38bdf8;">🐲 DRAGON NETWORK</h2>
+    </div>
+
+    <!-- Announcement Notice -->
+    <div class="notice-box">
+        <i class="fa-solid fa-bullhorn"></i> <span id="liveNotice">Welcome to Dragon Network USDT Portal!</span>
+    </div>
+
+    <!-- Auth Box (Sign In / Sign Up) -->
+    <div id="authBox" class="card">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button id="tabLoginBtn" style="background:#0284c7;" onclick="switchTab('login')">Sign In</button>
+            <button id="tabRegBtn" style="background:#334155;" onclick="switchTab('register')">Sign Up</button>
+        </div>
+
+        <div id="loginForm">
+            <h3 style="margin-bottom:10px; font-size:16px;">Login to Account</h3>
+            <input type="text" id="loginPhone" placeholder="Mobile Number">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button onclick="userLogin()">Sign In</button>
+        </div>
+
+        <div id="regForm" class="hidden">
+            <h3 style="margin-bottom:10px; font-size:16px;">Register New Account</h3>
+            <input type="text" id="regName" placeholder="Full Name">
+            <input type="text" id="regPhone" placeholder="Mobile Number">
+            <input type="password" id="regPass" placeholder="Password">
+            <input type="text" id="regRef" placeholder="Referral Code (Optional)">
+            <button class="btn-success" onclick="userRegister()">Register Now</button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="userDashboard" class="hidden">
+        
+        <!-- Header Info -->
+        <div class="app-header">
             <div class="user-info">
-                <h3>Dragon Network</h3>
-                <p>Welcome to User Panel</p>
+                <div>
+                    <h3 id="dashName">User</h3>
+                    <p id="dashPhone">+880...</p>
+                </div>
+                <span id="accountStatus" class="status-badge status-inactive">INACTIVE</span>
             </div>
-            <i class="fa-solid fa-bell" style="font-size:20px;"></i>
-        </div>
-        <div class="balance-card">
-            <div>
-                <span style="font-size:12px; opacity:0.8;">Total Balance</span>
-                <h2 style="font-size:22px;">৳ 0.00</h2>
+            <div class="balance-grid">
+                <div class="balance-card">
+                    <span>Main Balance</span>
+                    <h3 id="mainBalance">0.00 USDT</h3>
+                </div>
+                <div class="balance-card">
+                    <span>Ref Earnings</span>
+                    <h3 id="refCommission">0.00 USDT</h3>
+                </div>
             </div>
-            <button style="background:#0284c7; border:none; color:#fff; padding:8px 15px; border-radius:8px; font-weight:bold;">Deposit</button>
         </div>
-    </div>
 
-    <!-- Quick Services Menu -->
-    <div class="grid-menu">
-        <div class="menu-item"><i class="fa-solid fa-wallet"></i><span>Deposit</span></div>
-        <div class="menu-item"><i class="fa-solid fa-money-bill-transfer"></i><span>Withdraw</span></div>
-        <div class="menu-item"><i class="fa-solid fa-users"></i><span>Referral</span></div>
-        <div class="menu-item"><i class="fa-solid fa-headset"></i><span>Support</span></div>
-    </div>
+        <!-- Action Quick Menu -->
+        <div class="action-grid">
+            <div class="action-item" onclick="showSection('depositSection')">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Deposit</span>
+            </div>
+            <div class="action-item" onclick="showSection('withdrawSection')">
+                <i class="fa-solid fa-money-bill-transfer"></i>
+                <span>Withdraw</span>
+            </div>
+            <div class="action-item" onclick="showSection('referSection')">
+                <i class="fa-solid fa-users"></i>
+                <span>Referral</span>
+            </div>
+            <div class="action-item" onclick="showSection('supportSection')">
+                <i class="fa-solid fa-headset"></i>
+                <span>Support</span>
+            </div>
+        </div>
 
-    <!-- Task / Work Section -->
-    <div class="card">
-        <div class="card-title"><i class="fa-solid fa-list-check" style="color:#0284c7;"></i> Daily Work Task</div>
-        <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Complete daily tasks to collect commission.</p>
-        <button style="width:100%; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:bold;">Start Work</button>
+        <!-- Tab Content Sections -->
+        
+        <!-- Home / Tasks Section -->
+        <div id="homeSection">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-list-check" style="color:#38bdf8;"></i> Daily USDT Tasks</div>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:12px;">Complete tasks to earn daily USDT rewards.</p>
+                <button class="btn-success" onclick="startTask()">Start Tasks</button>
+            </div>
+        </div>
+
+        <!-- Deposit USDT Section -->
+        <div id="depositSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-wallet" style="color:#38bdf8;"></i> Deposit USDT (BEP20)</div>
+            <p style="font-size:12px; color:#94a3b8;">Send USDT to the BEP20 address below:</p>
+            <div class="wallet-address-box" id="depositAddress">0x1234567890abcdef1234567890abcdef12345678</div>
+            <input type="number" id="depAmount" placeholder="Amount (USDT)">
+            <input type="text" id="depTxHash" placeholder="Transaction Hash / TxID">
+            <button class="btn-success" onclick="submitDeposit()">Submit Deposit Request</button>
+        </div>
+
+        <!-- Withdraw USDT Section -->
+        <div id="withdrawSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-money-bill-transfer" style="color:#38bdf8;"></i> Withdraw USDT (BEP20)</div>
+            <input type="number" id="withAmount" placeholder="Amount (USDT)">
+            <input type="text" id="withAddress" placeholder="Your USDT BEP20 Address">
+            <button class="btn-success" onclick="submitWithdraw()">Request Withdrawal</button>
+        </div>
+
+        <!-- Referral Section -->
+        <div id="referSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-users" style="color:#38bdf8;"></i> Referral Program</div>
+            <p style="font-size:12px; color:#94a3b8;">Share your referral link to earn commissions:</p>
+            <div class="wallet-address-box" id="refLink">Loading referral link...</div>
+        </div>
+
+        <!-- Support Section -->
+        <div id="supportSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-headset" style="color:#38bdf8;"></i> Customer Support</div>
+            <textarea id="userMsg" rows="3" placeholder="Write your issue or details..."></textarea>
+            <button onclick="sendSupportMsg()">Send Message</button>
+        </div>
+
+        <button class="btn-danger" onclick="logout()" style="margin-top:15px;">Sign Out</button>
     </div>
 </div>
 
 <!-- Bottom Navigation Bar -->
-<div class="bottom-nav">
-    <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i>Home</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-briefcase"></i>Tasks</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-user-plus"></i>Refer</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-user"></i>Profile</a>
+<div id="bottomNav" class="bottom-nav hidden">
+    <div class="nav-btn active" onclick="navTab('homeSection', this)"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="nav-btn" onclick="navTab('depositSection', this)"><i class="fa-solid fa-wallet"></i>Deposit</div>
+    <div class="nav-btn" onclick="navTab('referSection', this)"><i class="fa-solid fa-users"></i>Refer</div>
+    <div class="nav-btn" onclick="navTab('supportSection', this)"><i class="fa-solid fa-user"></i>Profile</div>
 </div>
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyADJG4lXeMOJqbm11q5dG9KI3IxcpoXUs0",
+      authDomain: "dragon-network-db5ba.firebaseapp.com",
+      projectId: "dragon-network-db5ba",
+      storageBucket: "dragon-network-db5ba.firebasestorage.app",
+      messagingSenderId: "186488018721",
+      appId: "1:186488018721:web:a8a5a85c51ede7b4be1060",
+      databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    let currentUser = null;
+
+    database.ref('site/notice').on('value', (snapshot) => {
+        document.getElementById('liveNotice').innerText = snapshot.val() || 'Welcome to Dragon Network USDT Portal!';
+    });
+
+    function switchTab(type) {
+        if(type === 'login') {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('regForm').classList.add('hidden');
+            document.getElementById('tabLoginBtn').style.background = '#0284c7';
+            document.getElementById('tabRegBtn').style.background = '#334155';
+        } else {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('regForm').classList.remove('hidden');
+            document.getElementById('tabLoginBtn').style.background = '#334155';
+            document.getElementById('tabRegBtn').style.background = '#0284c7';
+        }
+    }
+
+    function userRegister() {
+        const name = document.getElementById('regName').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const pass = document.getElementById('regPass').value.trim();
+        const ref = document.getElementById('regRef').value.trim();
+
+        if(!name || !phone || !pass) return alert('Please complete all fields!');
+
+        const userRef = database.ref('users/' + phone);
+        userRef.once('value').then((snapshot) => {
+            if(snapshot.exists()) {
+                alert('Phone number already registered!');
+            } else {
+                userRef.set({
+                    name: name, phone: phone, pass: pass,
+                    referredBy: ref || 'Direct', status: 'INACTIVE',
+                    balance: 0.00, commission: 0.00, joinedAt: Date.now()
+                }).then(() => {
+                    alert('Registration Successful! Please Login.');
+                    switchTab('login');
+                    document.getElementById('loginPhone').value = phone;
+                });
+            }
+        });
+    }
+
+    function userLogin() {
+        const phone = document.getElementById('loginPhone').value.trim();
+        const pass = document.getElementById('loginPass').value.trim();
+
+        if(!phone || !pass) return alert('Enter phone and password!');
+
+        database.ref('users/' + phone).once('value').then((snapshot) => {
+            if(snapshot.exists() && snapshot.val().pass === pass) {
+                currentUser = snapshot.val();
+                showDashboard();
+            } else {
+                alert('Invalid phone or password!');
+            }
+        });
+    }
+
+    function showDashboard() {
+        document.getElementById('authBox').classList.add('hidden');
+        document.getElementById('userDashboard').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+
+        document.getElementById('dashName').innerText = currentUser.name;
+        document.getElementById('dashPhone').innerText = currentUser.phone;
+        document.getElementById('mainBalance').innerText = (currentUser.balance || 0).toFixed(2) + ' USDT';
+        document.getElementById('refCommission').innerText = (currentUser.commission || 0).toFixed(2) + ' USDT';
+        document.getElementById('refLink').innerText = 'https://sujon24789.github.io/dragon-site/?ref=' + currentUser.phone;
+
+        const statusElem = document.getElementById('accountStatus');
+        statusElem.innerText = currentUser.status || 'INACTIVE';
+        statusElem.className = 'status-badge ' + (currentUser.status === 'ACTIVE' ? 'status-active' : 'status-inactive');
+    }
+
+    function showSection(sectionId) {
+        ['homeSection', 'depositSection', 'withdrawSection', 'referSection', 'supportSection'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    function navTab(sectionId, btnElem) {
+        showSection(sectionId);
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        btnElem.classList.add('active');
+    }
+
+    function submitDeposit() {
+        const amt = document.getElementById('depAmount').value;
+        const tx = document.getElementById('depTxHash').value.trim();
+        if(!amt || !tx) return alert('Enter deposit amount and TxHash!');
+
+        database.ref('requests').push({
+            type: 'Deposit',
+            username: currentUser.name + " (" + currentUser.phone + ")",
+            details: `Amount: ${amt} USDT (BEP20) | TxID: ${tx}`,
+            timestamp: Date.now()
+        }).then(() => {
+            alert('Deposit request submitted to admin!');
+            document.getElementById('depAmount').value = '';
+            document.getElementById('depTxHash').value = '';
+        });
+    }
+
+    function submitWithdraw() {
+        const amt = document.getElementById('withAmount').value;
+        const addr = document.getElementById('withAddress').value.trim();
+        if(!amt || !addr) return alert('Enter withdrawal amount and BEP20 address!');
+
+        database.ref('requests').push({
+            type: 'Withdraw',
+            username: currentUser.name + " (" + currentUser.phone + ")",
+            details: `Amount: ${amt} USDT | BEP20 Addr: ${addr}`,
+            timestamp: Date.now()
+        }).then(() => {
+            alert('Withdrawal request submitted!');
+            document.getElementById('withAmount').value = '';
+            document.getElementById('withAddress').value = '';
+        });
+    }
+
+    function sendSupportMsg() {
+        const msg = document.getElementById('userMsg').value.trim();
+        if(!msg) return alert('Enter your message!');
+        database.ref('requests').push({
+            type: 'Support',
+            username: currentUser.name + " (" + currentUser.phone + ")",
+            details: msg,
+            timestamp: Date.now()
+        }).then(() => {
+            alert('Message sent to admin!');
+            document.getElementById('userMsg').value = '';
+        });
+    }
+
+    function startTask() {
+        if(currentUser.status !== 'ACTIVE') {
+            alert('Please activate your account by depositing USDT to start daily tasks!');
+        } else {
+            alert('Task system running. Check back daily for USDT rewards!');
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('userDashboard').classList.add('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        document.getElementById('authBox').classList.remove('hidden');
+    }
+</script>
 
 </body>
 </html>
