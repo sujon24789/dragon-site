@@ -80,6 +80,11 @@
         .locked-card { opacity: 0.6; pointer-events: none; border: 1px solid #dc2626 !important; }
         .job-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; margin-top: 10px; }
         .proof-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 12px; }
+
+        /* Downline Stats Custom Styling */
+        .downline-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
+        .downline-title { font-size: 14px; font-weight: 700; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 10px; }
+        .downline-item { font-size: 12px; color: #cbd5e1; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
     </style>
 </head>
 <body>
@@ -323,13 +328,35 @@
             </div>
         </div>
 
-        <!-- Referral & 10 Generation Section -->
+        <!-- Referral & Dynamic Downline Stats Section -->
         <div id="referSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-users" style="color:#38bdf8;"></i> 10 Generation Upline Commission</div>
-            <p style="font-size:12px; color:#94a3b8;">Share your referral link to earn 10-level upline commissions:</p>
-            <div class="wallet-address-box" id="refLink">Loading referral link...</div>
+            <div class="card-title"><i class="fa-solid fa-users" style="color:#38bdf8;"></i> 👥 MY DOWNLINE STATS</div>
             
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Share your referral link to build your team:</p>
+            <div class="wallet-address-box" id="refLink">Loading referral link...</div>
+
             <div style="margin-top:15px;">
+                <!-- Partner Gen 1 Info Card -->
+                <div class="downline-card">
+                    <div class="downline-title">
+                        🔹 1. Partner (Gen 1 Active): <span id="gen1Count" style="color:#4ade80;">0</span> Person(s)
+                    </div>
+                    <div style="font-size:12px; font-weight:600; color:#f8fafc; margin-bottom:6px;">📋 Active Direct Member IDs:</div>
+                    <div id="gen1ListContainer">
+                        <p style="font-size:11px; color:#94a3b8;">Loading direct members...</p>
+                    </div>
+                </div>
+
+                <!-- Total Team Info Card -->
+                <div class="downline-card">
+                    <div class="downline-title" style="color:#a855f7; border-bottom:none; margin-bottom:0;">
+                        🔹 Team (Gen 1 - 10 Downline Active): <span id="totalTeamCount" style="color:#4ade80;">0</span> Person(s)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referral Income Plan Overview -->
+            <div style="margin-top:20px; border-top:1px solid #334155; padding-top:12px;">
                 <h4 style="font-size:13px; color:#38bdf8; margin-bottom:8px;">Referral Income Plan:</h4>
                 <div class="level-list">
                     <div class="level-item"><span>🔹 Gen 1</span><span>$1.00 USDT</span></div>
@@ -516,6 +543,9 @@
             }
         });
 
+        // Load Realtime Downline Statistics
+        loadDownlineStats();
+
         // Listen for Approved Jobs to Display in Micro Job Section
         loadApprovedJobs();
 
@@ -597,6 +627,62 @@
             vipLockedMsg.classList.remove('hidden');
             vipTgLink.classList.add('hidden');
         }
+    }
+
+    // Dynamic 10-Generation Downline Calculation Engine
+    function loadDownlineStats() {
+        database.ref('users').on('value', (snapshot) => {
+            if(!snapshot.exists()) return;
+            const allUsers = snapshot.val();
+
+            let gen1ActiveList = [];
+            let currentLevelParents = [currentUser.phone];
+            let totalTeamCount = 0;
+
+            // Loop through 10 generations recursively
+            for(let level = 1; level <= 10; level++) {
+                let nextLevelParents = [];
+
+                Object.keys(allUsers).forEach(phone => {
+                    const u = allUsers[phone];
+                    if(currentLevelParents.includes(u.referredBy)) {
+                        nextLevelParents.push(u.phone);
+
+                        if(u.status === 'ACTIVE') {
+                            totalTeamCount++;
+                            if(level === 1) {
+                                gen1ActiveList.push(u);
+                            }
+                        }
+                    }
+                });
+
+                currentLevelParents = nextLevelParents;
+                if(currentLevelParents.length === 0) break;
+            }
+
+            // Render Gen 1 Data
+            document.getElementById('gen1Count').innerText = gen1ActiveList.length;
+            const listContainer = document.getElementById('gen1ListContainer');
+            listContainer.innerHTML = '';
+
+            if(gen1ActiveList.length === 0) {
+                listContainer.innerHTML = '<p style="font-size:11px; color:#94a3b8;">No active direct members found.</p>';
+            } else {
+                gen1ActiveList.forEach((member, index) => {
+                    listContainer.innerHTML += `
+                        <div class="downline-item">
+                            <span>${index + 1}.</span>
+                            <span style="color:#38bdf8; font-weight:600;">${member.phone}</span>
+                            <span style="font-size:10px; color:#94a3b8;">(${member.name})</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Render Total Team Data
+            document.getElementById('totalTeamCount').innerText = totalTeamCount;
+        });
     }
 
     function showSection(sectionId) {
