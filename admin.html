@@ -340,7 +340,7 @@
                             <p style="font-size:10px; color:#94a3b8;">${new Date(req.timestamp).toLocaleString()}</p>
                             <div class="action-row">
                                 <button class="btn-success" onclick="approveRequest('${reqKey}', '${req.type}', '${req.phone}', '${req.details}', ${req.amount || 0})">Approve</button>
-                                <button class="btn-danger" onclick="rejectRequest('${reqKey}', '${req.type}', '${req.phone}')">Reject</button>
+                                <button class="btn-danger" onclick="rejectRequest('${reqKey}', '${req.type}', '${req.phone}', '${req.details}', ${req.amount || 0})">Reject</button>
                             </div>
                         </div>
                     `;
@@ -388,7 +388,6 @@
                 status: 'ACTIVE',
                 activationRequest: 'APPROVED'
             }).then(() => {
-                // Trigger 10-generation referral commission distribution upon approval
                 distributeReferralCommissions(targetPhone);
                 alert('ID Activation Request Approved & 10-Gen Commissions Distributed!');
             });
@@ -402,6 +401,29 @@
                 database.ref('users/' + targetPhone + '/balance').transaction((curr) => (curr || 0) + amt);
             }
             alert('Deposit Request Approved!');
+        } else if(type === 'Withdraw') {
+            // Withdrawal amount was already deducted when requested, so approval just finalizes it
+            alert('Withdrawal Request Approved!');
+        } else {
+            alert('Request Approved!');
+        }
+    }
+
+    // Admin rejects request (For Withdraw: refunds the deducted amount back to user's balance)
+    function rejectRequest(key, type, phone, details, explicitAmt) {
+        database.ref('requests/' + key + '/status').set('REJECTED');
+
+        let targetPhone = phone;
+        if(!targetPhone && details) {
+            const phoneMatch = details.match(/(?:01\d{9}|\+?8801\d{9})/);
+            if(phoneMatch) targetPhone = phoneMatch[0];
+        }
+
+        if(type === 'ID_Activation' && targetPhone) {
+            database.ref('users/' + targetPhone).update({
+                status: 'INACTIVE',
+                activationRequest: 'REJECTED'
+            });
         } else if(type === 'Withdraw' && targetPhone) {
             let amt = explicitAmt || 0;
             if(!amt && details) {
@@ -409,35 +431,12 @@
                 if(amtMatch) amt = parseFloat(amtMatch[1]);
             }
             if(amt > 0) {
-                database.ref('users/' + targetPhone + '/balance').transaction((curr) => Math.max(0, (curr || 0) - amt));
+                database.ref('users/' + targetPhone + '/balance').transaction((curr) => {
+                    return (curr || 0) + amt;
+                });
             }
-            alert('Withdrawal Request Approved!');
-        } else {
-            alert('Request Approved!');
-        }
-    }
-
-    function rejectRequest(key, type, phone) {
-        database.ref('requests/' + key + '/status').set('REJECTED');
-
-        let targetPhone = phone;
-        if(!targetPhone) {
-            database.ref('requests/' + key).once('value').then(s => {
-                if(s.exists() && s.val().phone) {
-                    targetPhone = s.val().phone;
-                    if(type === 'ID_Activation' && targetPhone) {
-                        database.ref('users/' + targetPhone).update({
-                            status: 'INACTIVE',
-                            activationRequest: 'REJECTED'
-                        });
-                    }
-                }
-            });
-        } else if(type === 'ID_Activation' && targetPhone) {
-            database.ref('users/' + targetPhone).update({
-                status: 'INACTIVE',
-                activationRequest: 'REJECTED'
-            });
+            alert(`Withdrawal Rejected! $${amt.toFixed(2)} USDT refunded to user balance.`);
+            return;
         }
 
         alert('Request Rejected.');

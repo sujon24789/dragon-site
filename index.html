@@ -334,7 +334,7 @@
                 </div>
             </div>
 
-            <p style="font-size:11px; color:#94a3b8; margin:12px 0 8px 0;">* Note: Account must be ACTIVE to withdraw funds.</p>
+            <p style="font-size:11px; color:#94a3b8; margin:12px 0 8px 0;">* Note: Account must be ACTIVE to withdraw funds. Balance will be deducted immediately upon request.</p>
 
             <div id="withFormArea">
                 <input type="number" id="withAmount" placeholder="Amount (USDT)">
@@ -611,7 +611,7 @@
                     const req = child.val();
                     if(req.type === 'Withdraw') {
                         const match = req.details ? req.details.match(/Amount:\s*([\d.]+)/) : null;
-                        const amt = match ? parseFloat(match[1]) : 0;
+                        const amt = match ? parseFloat(match[1]) : (req.amount || 0);
 
                         if(req.status === 'APPROVED') totalApproved += amt;
                         else if(req.status === 'REJECTED') totalRejected += amt;
@@ -979,6 +979,7 @@
         });
     }
 
+    // Submit Withdrawal with Immediate Balance Deduction
     function submitWithdraw() {
         const amt = parseFloat(document.getElementById('withAmount').value);
         const addr = document.getElementById('withAddress').value.trim();
@@ -990,17 +991,25 @@
         if(currentBalance <= 0) return alert('Your account balance is 0 USDT!');
         if(amt > currentBalance) return alert(`Insufficient balance! Your balance is $${currentBalance.toFixed(2)} USDT`);
 
-        database.ref('requests').push({
-            type: 'Withdraw',
-            phone: currentUser.phone,
-            username: currentUser.name + " (" + currentUser.phone + ")",
-            details: `Amount: ${amt} USDT | BEP20 Addr: ${addr}`,
-            status: 'PENDING',
-            timestamp: Date.now()
+        // Deduct balance immediately upon submitting withdrawal request
+        database.ref('users/' + currentUser.phone + '/balance').transaction((curr) => {
+            return Math.max(0, (curr || 0) - amt);
         }).then(() => {
-            alert('Withdrawal request submitted! Please wait for admin approval.');
-            document.getElementById('withAmount').value = '';
-            document.getElementById('withAddress').value = '';
+            database.ref('requests').push({
+                type: 'Withdraw',
+                phone: currentUser.phone,
+                username: currentUser.name + " (" + currentUser.phone + ")",
+                details: `Amount: ${amt} USDT | BEP20 Addr: ${addr}`,
+                amount: amt,
+                status: 'PENDING',
+                timestamp: Date.now()
+            }).then(() => {
+                alert(`Withdrawal request submitted! $${amt.toFixed(2)} USDT has been deducted from your balance. Please wait for admin approval.`);
+                document.getElementById('withAmount').value = '';
+                document.getElementById('withAddress').value = '';
+            });
+        }).catch(err => {
+            alert('Error processing balance deduction: ' + err.message);
         });
     }
 
