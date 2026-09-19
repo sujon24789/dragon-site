@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>👑 Dragon Admin Control Panel (2FA Secured)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Otpauth JS for Google Authenticator TOTP verification -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -63,7 +62,7 @@
         <button style="background:#334155; font-size:12px; margin-top:5px;" onclick="backToLogin()">Back</button>
     </div>
 
-    <!-- First-time 2FA Setup Modal/Box -->
+    <!-- First-time 2FA Setup Box -->
     <div id="setup2FABox" class="card hidden" style="margin-top: 20px; border: 2px dashed #38bdf8;">
         <div class="card-title"><i class="fa-solid fa-qrcode"></i> Setup Google Authenticator (First Time)</div>
         <p style="font-size:12px; color:#94a3b8;">Scan this QR Code with your Google Authenticator app, or save the Secret Key manually:</p>
@@ -147,8 +146,9 @@
             </div>
         </div>
 
+        <!-- User Control Section (Updated with Password Reset feature) -->
         <div id="userControlSection" class="card hidden">
-            <div class="card-title"><i class="fa-solid fa-user-pen"></i> Direct User Control & Search</div>
+            <div class="card-title"><i class="fa-solid fa-user-pen"></i> Direct User Control & Password Reset</div>
             <input type="text" id="searchUserPhone" placeholder="Search User Mobile Number">
             <button onclick="searchUser()">Find User Details</button>
 
@@ -163,6 +163,12 @@
                     <label style="font-size:12px; color:#94a3b8;">Set New Balance (USDT):</label>
                     <input type="number" id="editBalanceInput">
                     <button class="btn-success" onclick="updateUserBalance()">Save New Balance</button>
+                </div>
+
+                <div style="margin-top:12px; border-top:1px dashed #334155; padding-top:10px;">
+                    <label style="font-size:12px; color:#facc15;">Reset User Password:</label>
+                    <input type="text" id="editPasswordInput" placeholder="Enter New Password">
+                    <button class="btn-danger" onclick="updateUserPassword()">Change Password</button>
                 </div>
             </div>
         </div>
@@ -198,7 +204,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<!-- QRCode generator library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
@@ -222,13 +227,10 @@
         if(document.getElementById('adminPassInput').value.trim() === ADMIN_PASS) {
             document.getElementById('adminAuthBox').classList.add('hidden');
             
-            // Check if 2FA secret exists in Firebase
             database.ref('admin/totpSecret').once('value').then((snapshot) => {
                 if(snapshot.exists()) {
-                    // 2FA already configured, ask for OTP code
                     document.getElementById('admin2FABox').classList.remove('hidden');
                 } else {
-                    // First time setup: generate new secret and show QR code
                     let secret = new OTPAuth.Secret({ size: 20 });
                     tempSecret = secret.base32;
                     
@@ -418,6 +420,7 @@
             document.getElementById('resCommission').innerText = (u.commission || 0).toFixed(2);
             document.getElementById('resRefBy').innerText = u.referredBy || 'Direct';
             document.getElementById('editBalanceInput').value = u.balance || 0;
+            document.getElementById('editPasswordInput').value = '';
             document.getElementById('searchResultArea').classList.remove('hidden');
         });
     }
@@ -430,6 +433,18 @@
         database.ref('users/' + activeSearchedPhone + '/balance').set(newBal).then(() => {
             alert('User balance updated successfully!');
             searchUser();
+        });
+    }
+
+    // Admin function to update/reset user password
+    function updateUserPassword() {
+        if(!activeSearchedPhone) return;
+        const newPass = document.getElementById('editPasswordInput').value.trim();
+        if(!newPass) return alert('Please enter a new password!');
+
+        database.ref('users/' + activeSearchedPhone + '/pass').set(newPass).then(() => {
+            alert(`Password successfully updated for user ${activeSearchedPhone}!`);
+            document.getElementById('editPasswordInput').value = '';
         });
     }
 
