@@ -7,16 +7,21 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #fff; padding: 20px; text-align: center; }
-        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 10px auto; max-width: 450px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        button { background: #10b981; color: white; font-weight: bold; cursor: pointer; padding: 6px 12px; border: none; border-radius: 4px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0b0f19; color: #f8fafc; font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 10px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        button { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-approve { background: #10b981; color: white; }
+        .btn-reject { background: #ef4444; color: white; margin-left: 5px; }
     </style>
 </head>
 <body>
-
-    <div class="card">
-        <h3>Pending Job Requests (Admin Panel)</h3>
-        <div id="adminPendingJobs" style="text-align: left;">Loading requests...</div>
+    <div class="container">
+        <div class="card">
+            <h3>Pending Job Requests (Admin Panel)</h3>
+            <div id="adminPendingJobs">Loading requests...</div>
+        </div>
     </div>
 
     <script>
@@ -28,12 +33,12 @@
         }
         const db = firebase.database();
 
-        db.ref('pending_jobs/').on('value', (snapshot) => {
+        db.ref('pending_jobs').on('value', (snapshot) => {
             let adminDiv = document.getElementById('adminPendingJobs');
             adminDiv.innerHTML = "";
 
             if(!snapshot.exists()) {
-                adminDiv.innerHTML = "<p>কোনো পেন্ডিং জব রিকোয়েস্ট নেই।</p>";
+                adminDiv.innerHTML = "<p>No pending job requests.</p>";
                 return;
             }
 
@@ -42,30 +47,30 @@
                 let job = childSnapshot.val();
 
                 adminDiv.innerHTML += `
-                    <div style="background:#0f172a; padding:10px; margin:8px 0; border-radius:5px;">
+                    <div style="background:#0f172a; padding:12px; margin:8px 0; border-radius:6px; border:1px solid #334155;">
                         <p><b>Title:</b> ${job.title}</p>
-                        <p><b>Reward:</b> ${parseFloat(job.reward).toFixed(2)} USDT</p>
-                        <button onclick="approveJobRequest('${jobId}', '${job.title}', ${job.reward})">Approve</button>
-                        <button onclick="rejectJob('${jobId}')" style="background:#ef4444; margin-left:5px;">Reject</button>
+                        <p style="color: #38bdf8; margin: 5px 0;"><b>Reward:</b> ${parseFloat(job.reward).toFixed(2)} USDT</p>
+                        <button class="btn-approve" onclick="approveJobRequest('${jobId}', '${job.title}', ${job.reward})">Approve</button>
+                        <button class="btn-reject" onclick="rejectJob('${jobId}')">Reject</button>
                     </div>
                 `;
             });
         });
 
         function approveJobRequest(jobId, title, reward) {
-            db.ref('jobs/').push({
+            db.ref('jobs').push({
                 title: title,
                 reward: reward,
                 timestamp: Date.now()
             }).then(() => {
                 db.ref('pending_jobs/' + jobId).remove();
-                alert("জব সফলভাবে অ্যাপ্রুভ করা হয়েছে!");
+                alert("Job successfully approved and published to Micro Jobs!");
             });
         }
 
         function rejectJob(jobId) {
             db.ref('pending_jobs/' + jobId).remove().then(() => {
-                alert("জব রিকোয়েস্ট রিজেক্ট করা হয়েছে!");
+                alert("Job request rejected!");
             });
         }
     </script>

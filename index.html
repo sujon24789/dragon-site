@@ -7,24 +7,46 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #fff; padding: 20px; text-align: center; }
-        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 10px auto; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        input, button { width: 90%; padding: 10px; margin: 8px 0; border-radius: 5px; border: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0b0f19; color: #f8fafc; font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 10px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        input, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: none; }
         button { background: #10b981; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background: #059669; }
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .balance-card { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; text-align: center; }
+        .balance-card span { font-size: 11px; color: #94a3b8; }
+        .balance-card h3 { font-size: 18px; color: #38bdf8; margin-top: 5px; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Balance & Action Sections Preserved -->
+        <div class="balance-grid">
+            <div class="balance-card">
+                <span>Total Balance</span>
+                <h3>0.00 USDT</h3>
+            </div>
+            <div class="balance-card">
+                <span>Referral Earnings</span>
+                <h3>0.00 USDT</h3>
+            </div>
+        </div>
 
-    <div class="card">
-        <h3>Post a New Job</h3>
-        <input type="text" id="jobTitle" placeholder="Job Title (e.g. Subscribe Channel)">
-        <input type="number" id="jobReward" placeholder="Reward Amount (USDT)" step="0.01">
-        <button onclick="submitJob()">Submit Job</button>
-    </div>
+        <!-- Job Post Form -->
+        <div class="card">
+            <h3>Post a New Job</h3>
+            <input type="text" id="jobTitle" placeholder="Job Title (e.g. Subscribe Channel)">
+            <input type="number" id="jobReward" placeholder="Reward Amount (USDT)" step="0.01">
+            <button onclick="submitJob()">Submit Job</button>
+        </div>
 
-    <div class="card">
-        <h3>Micro Jobs (Live)</h3>
-        <div id="microJobList" style="text-align: left;">Loading jobs...</div>
+        <!-- Micro Job List -->
+        <div class="card">
+            <h3>Micro Jobs (Live)</h3>
+            <div id="microJobList">Loading jobs...</div>
+        </div>
     </div>
 
     <script>
@@ -41,37 +63,39 @@
             let reward = parseFloat(document.getElementById('jobReward').value);
 
             if(!title || isNaN(reward) || reward <= 0) {
-                alert("সঠিকভাবে টাইটেল এবং রিওয়ার্ড দিন!");
+                alert("Please enter a valid job title and reward amount!");
                 return;
             }
 
-            db.ref('pending_jobs/').push({
+            db.ref('pending_jobs').push({
                 title: title,
                 reward: reward,
                 status: 'pending',
                 timestamp: Date.now()
             }).then(() => {
-                alert("জব রিকোয়েস্ট এডমিনের কাছে পাঠানো হয়েছে!");
+                alert("Job request successfully sent to admin!");
                 document.getElementById('jobTitle').value = "";
                 document.getElementById('jobReward').value = "";
+            }).catch((error) => {
+                alert("Error: " + error.message);
             });
-        }                
+        }
 
-        db.ref('jobs/').on('value', (snapshot) => {
+        db.ref('jobs').on('value', (snapshot) => {
             let jobListDiv = document.getElementById('microJobList');
             jobListDiv.innerHTML = "";
             
             if(!snapshot.exists()) {
-                jobListDiv.innerHTML = "<p>কোনো মাইক্রো জব নেই।</p>";
+                jobListDiv.innerHTML = "<p>No micro jobs available.</p>";
                 return;
             }
 
             snapshot.forEach((childSnapshot) => {
                 let job = childSnapshot.val();
                 jobListDiv.innerHTML += `
-                    <div style="background:#0f172a; padding:10px; margin:5px 0; border-radius:5px;">
+                    <div style="background:#0f172a; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #334155;">
                         <h4>${job.title}</h4>
-                        <p>Reward: <b>${parseFloat(job.reward).toFixed(2)} USDT</b></p>
+                        <p style="color: #38bdf8;">Reward: <b>${parseFloat(job.reward).toFixed(2)} USDT</b></p>
                     </div>
                 `;
             });
