@@ -14,6 +14,10 @@
         input, textarea { background: #0f172a; color: #fff; border: 1px solid #475569; }
         button { background: #0284c7; color: white; font-weight: bold; cursor: pointer; }
         button:hover { background: #0369a1; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #0f172a; color: #38bdf8; }
+        .btn-del { background: #dc2626; padding: 5px 10px; width: auto; font-size: 14px; }
         #adminDashboard { display: none; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -37,6 +41,22 @@
             <textarea id="noticeInput" rows="3" placeholder="Enter notice for users..."></textarea>
             <button onclick="updateNotice()">Post Notice</button>
         </div>
+
+        <div class="card">
+            <h2>📩 Active User Requests</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Name/ID</th>
+                        <th>Details / Request</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="requestTable">
+                    <tr><td colspan="3">Loading requests...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -59,6 +79,7 @@
         if(pass === 'admin123') {
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('adminDashboard').style.display = 'block';
+            loadRequests();
         } else {
             document.getElementById('errMsg').style.display = 'block';
         }
@@ -70,8 +91,34 @@
             database.ref('site/notice').set(noticeText).then(() => {
                 alert('Notice Live Updated Successfully!');
                 document.getElementById('noticeInput').value = '';
-            }).catch(err => alert('Error: ' + err.message));
+            });
         }
+    }
+
+    function loadRequests() {
+        database.ref('requests').on('value', (snapshot) => {
+            const tbody = document.getElementById('requestTable');
+            tbody.innerHTML = '';
+            const data = snapshot.val();
+            if(!data) {
+                tbody.innerHTML = '<tr><td colspan="3">No active requests found.</td></tr>';
+                return;
+            }
+            for(let id in data) {
+                const req = data[id];
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${req.username || 'User'}</td>
+                        <td>${req.message || req.type || 'N/A'}</td>
+                        <td><button class="btn-del" onclick="deleteReq('${id}')">Delete</button></td>
+                    </tr>
+                `;
+            }
+        });
+    }
+
+    function deleteReq(id) {
+        database.ref('requests/' + id).remove();
     }
 </script>
 
