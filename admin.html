@@ -1,64 +1,204 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Network - Admin Panel</title>
+    <title>👑 Dragon Admin Control Panel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        h1, h2 { color: #38bdf8; margin-bottom: 15px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #334155; }
-        input, button, textarea { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: none; font-size: 16px; }
-        input, textarea { background: #0f172a; color: #fff; border: 1px solid #475569; }
-        button { background: #0284c7; color: white; font-weight: bold; cursor: pointer; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b0f19; color: #f8fafc; padding-bottom: 50px; }
+        .container { max-width: 600px; margin: auto; padding: 15px; }
+
+        .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #334155; margin-bottom: 20px; }
+        .header h2 { color: #38bdf8; font-size: 20px; }
+        .header p { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+
+        /* Summary Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-card i { font-size: 22px; margin-bottom: 6px; }
+        .stat-card .num { font-size: 20px; font-weight: bold; color: #f8fafc; }
+        .stat-card .label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+        /* Action Menu Buttons Grid */
+        .admin-menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .menu-btn { background: #1e293b; border: 1px solid #334155; padding: 14px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; color: #f8fafc; }
+        .menu-btn:hover { border-color: #38bdf8; background: #0f172a; }
+
+        /* Cards & Forms */
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+        .card-title { font-size: 15px; font-weight: 700; color: #38bdf8; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+
+        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 14px; outline: none; }
+        input, select, textarea { background: #0f172a; color: #fff; border: 1px solid #334155; }
+        input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+        button { background: #0284c7; color: white; font-weight: 600; cursor: pointer; transition: 0.2s; }
         button:hover { background: #0369a1; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
-        th { background: #0f172a; color: #38bdf8; }
-        .btn-del { background: #dc2626; padding: 5px 10px; width: auto; font-size: 14px; }
-        #adminDashboard { display: none; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+
+        /* Requests & User Lists */
+        .item-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 12px; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-weight: bold; }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; text-transform: uppercase; }
+        .badge-pending { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid #eab308; }
+        .badge-active { background: rgba(22, 163, 74, 0.2); color: #4ade80; border: 1px solid #16a34a; }
+        .badge-inactive { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #dc2626; }
+
+        .hidden { display: none !important; }
+        .action-row { display: flex; gap: 8px; margin-top: 8px; }
+        .action-row button { padding: 8px; font-size: 12px; margin: 0; }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <div id="loginBox" class="card">
-        <h2>Admin Login</h2>
-        <input type="password" id="adminPass" placeholder="Enter Admin Password">
-        <button onclick="login()">Access Panel</button>
-        <p id="errMsg" style="color: #ef4444; display:none; margin-top:5px;">ভুল পাসওয়ার্ড!</p>
+    
+    <!-- Admin Authentication Shield -->
+    <div id="adminAuthBox" class="card" style="margin-top: 50px;">
+        <div class="card-title"><i class="fa-solid fa-lock"></i> Admin Authentication</div>
+        <input type="password" id="adminPassInput" placeholder="Enter Admin Secret Password">
+        <button onclick="checkAdminAuth()">Login to Admin Panel</button>
     </div>
 
-    <div id="adminDashboard">
-        <h1>Dragon Network Admin Panel</h1>
-
-        <div class="card">
-            <h2>📢 Update Live Notice</h2>
-            <textarea id="noticeInput" rows="3" placeholder="Enter notice for users..."></textarea>
-            <button onclick="updateNotice()">Post Notice</button>
+    <!-- Admin Content Area -->
+    <div id="adminPanelArea" class="hidden">
+        
+        <div class="header">
+            <h2>👑 DRAGON ADMIN CONTROL PANEL</h2>
+            <p>Welcome back, Master Admin!</p>
         </div>
 
-        <div class="card">
-            <h2>📩 Active User Requests</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>User Name/ID</th>
-                        <th>Details / Request</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="requestTable">
-                    <tr><td colspan="3">Loading requests...</td></tr>
-                </tbody>
-            </table>
+        <!-- Bot & App Key Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fa-solid fa-users" style="color:#38bdf8;"></i>
+                <div class="num" id="statTotalUsers">0</div>
+                <div class="label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-user-check" style="color:#4ade80;"></i>
+                <div class="num" id="statActiveUsers">0</div>
+                <div class="label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-clock-rotate-left" style="color:#facc15;"></i>
+                <div class="num" id="statPendingReqs">0</div>
+                <div class="label">Pending Requests</div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-briefcase" style="color:#a855f7;"></i>
+                <div class="num" id="statTotalJobs">0</div>
+                <div class="label">Pending Job Posts</div>
+            </div>
         </div>
+
+        <!-- Quick Admin Action Grid -->
+        <div class="admin-menu-grid">
+            <div class="menu-btn" onclick="showSection('userControlSection')">
+                <i class="fa-solid fa-user-gear" style="color:#38bdf8;"></i> User Management
+            </div>
+            <div class="menu-btn" onclick="showSection('giftSection')">
+                🎁 Gift Balance
+            </div>
+            <div class="menu-btn" onclick="showSection('activationSection')">
+                🔵 / 🔴 User Status
+            </div>
+            <div class="menu-btn" onclick="showSection('requestsSection')">
+                ⏳ All Pending Requests
+            </div>
+            <div class="menu-btn" onclick="showSection('jobReviewSection')">
+                💼 Job Post Approval
+            </div>
+            <div class="menu-btn" onclick="showSection('siteSettingsSection')">
+                ⚙️ Site Notice & Banner
+            </div>
+        </div>
+
+        <!-- 🎁 Gift / Add Balance Section -->
+        <div id="giftSection" class="card hidden">
+            <div class="card-title">🎁 Gift Balance / Bonus Income</div>
+            <input type="text" id="giftUserPhone" placeholder="User Mobile Number (e.g., 017...)">
+            <input type="number" id="giftAmount" placeholder="Amount (USDT)">
+            <select id="giftType">
+                <option value="bonus">🎁 Gift / Bonus Income</option>
+                <option value="balance">💳 Main Available Balance</option>
+            </select>
+            <button class="btn-success" onclick="executeGiftBalance()">Send USDT Gift</button>
+        </div>
+
+        <!-- 🔵 Activate / 🔴 Deactivate User Section -->
+        <div id="activationSection" class="card hidden">
+            <div class="card-title">🔵 Activate / 🔴 Deactivate User</div>
+            <input type="text" id="targetUserPhone" placeholder="User Mobile Number">
+            <div class="action-row">
+                <button class="btn-success" onclick="setUserStatus('ACTIVE')">🔵 Activate User</button>
+                <button class="btn-danger" onclick="setUserStatus('INACTIVE')">🔴 Deactivate User</button>
+            </div>
+        </div>
+
+        <!-- User Management Search & Direct Edit Section -->
+        <div id="userControlSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-user-pen"></i> Direct User Control & Search</div>
+            <input type="text" id="searchUserPhone" placeholder="Search User Mobile Number">
+            <button onclick="searchUser()">Find User Details</button>
+
+            <div id="searchResultArea" class="hidden" style="margin-top:15px; border-top:1px solid #334155; padding-top:12px;">
+                <p><b>Name:</b> <span id="resName" style="color:#38bdf8;">-</span></p>
+                <p><b>Status:</b> <span id="resStatus">-</span></p>
+                <p><b>Main Balance:</b> $<span id="resBalance">0.00</span> USDT</p>
+                <p><b>Commission:</b> $<span id="resCommission">0.00</span> USDT</p>
+                <p><b>Referred By:</b> <span id="resRefBy">-</span></p>
+
+                <div style="margin-top:12px;">
+                    <label style="font-size:12px; color:#94a3b8;">Set New Balance (USDT):</label>
+                    <input type="number" id="editBalanceInput">
+                    <button class="btn-success" onclick="updateUserBalance()">Save New Balance</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⏳ Pending Requests Handling Section (Activations, Deposits, Withdrawals) -->
+        <div id="requestsSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-list-check"></i> Manage Deposit & Withdrawal Requests</div>
+            <div id="pendingRequestsContainer">
+                <p style="font-size:12px; color:#94a3b8; text-align:center;">Loading requests...</p>
+            </div>
+        </div>
+
+        <!-- 💼 Micro Job Approval Section -->
+        <div id="jobReviewSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-briefcase"></i> Micro Job Approval Queue</div>
+            <div id="pendingJobsContainer">
+                <p style="font-size:12px; color:#94a3b8; text-align:center;">Loading pending job posts...</p>
+            </div>
+        </div>
+
+        <!-- ⚙️ Global Site Settings Section (Notice & Banner) -->
+        <div id="siteSettingsSection" class="card hidden">
+            <div class="card-title"><i class="fa-solid fa-sliders"></i> Site Notice & Banner Graphics</div>
+            
+            <label style="font-size:12px; color:#94a3b8;">Announcement Notice Text:</label>
+            <input type="text" id="siteNoticeInput" placeholder="Live Notice Message">
+            <button onclick="saveSiteNotice()">Update Notice Text</button>
+
+            <label style="font-size:12px; color:#94a3b8; margin-top:10px; display:block;">Top Graphics Banner Image URL:</label>
+            <input type="text" id="siteBannerInput" placeholder="Banner Img URL (PostImage / Imgur URL)">
+            <button class="btn-success" onclick="saveSiteBanner()">Update Banner Image</button>
+        </div>
+
+        <button class="btn-danger" onclick="adminLogout()" style="margin-top:20px;">Sign Out Admin</button>
+
     </div>
+
 </div>
+
+<!-- Firebase SDK Compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <script>
     const firebaseConfig = {
@@ -71,54 +211,315 @@
       databaseURL: "https://dragon-network-db5ba-default-rtdb.firebaseio.com/"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const database = firebase.database();
 
-    function login() {
-        const pass = document.getElementById('adminPass').value;
-        if(pass === 'admin123') {
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('adminDashboard').style.display = 'block';
-            loadRequests();
+    const ADMIN_PASS = "dragon2026"; // Passcode to open control panel
+
+    function checkAdminAuth() {
+        const pass = document.getElementById('adminPassInput').value.trim();
+        if(pass === ADMIN_PASS) {
+            document.getElementById('adminAuthBox').classList.add('hidden');
+            document.getElementById('adminPanelArea').classList.remove('hidden');
+            initAdminDashboard();
         } else {
-            document.getElementById('errMsg').style.display = 'block';
+            alert('Invalid Secret Admin Password!');
         }
     }
 
-    function updateNotice() {
-        const noticeText = document.getElementById('noticeInput').value;
-        if(noticeText) {
-            database.ref('site/notice').set(noticeText).then(() => {
-                alert('Notice Live Updated Successfully!');
-                document.getElementById('noticeInput').value = '';
+    function initAdminDashboard() {
+        loadStats();
+        loadRequests();
+        loadPendingJobs();
+        loadSiteSettings();
+    }
+
+    function showSection(sectionId) {
+        ['giftSection', 'activationSection', 'userControlSection', 'requestsSection', 'jobReviewSection', 'siteSettingsSection'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    // Load Overall Platform Statistics
+    function loadStats() {
+        database.ref('users').on('value', (snapshot) => {
+            let total = 0;
+            let active = 0;
+            if(snapshot.exists()) {
+                snapshot.forEach(child => {
+                    total++;
+                    if(child.val().status === 'ACTIVE') active++;
+                });
+            }
+            document.getElementById('statTotalUsers').innerText = total;
+            document.getElementById('statActiveUsers').innerText = active;
+        });
+
+        database.ref('requests').on('value', (snapshot) => {
+            let pending = 0;
+            if(snapshot.exists()) {
+                snapshot.forEach(child => {
+                    if(!child.val().status || child.val().status === 'PENDING') pending++;
+                });
+            }
+            document.getElementById('statPendingReqs').innerText = pending;
+        });
+
+        database.ref('job_posts').on('value', (snapshot) => {
+            let pendingJobs = 0;
+            if(snapshot.exists()) {
+                snapshot.forEach(child => {
+                    if(child.val().status === 'PENDING') pendingJobs++;
+                });
+            }
+            document.getElementById('statTotalJobs').innerText = pendingJobs;
+        });
+    }
+
+    // 🎁 Gift Balance Functionality
+    function executeGiftBalance() {
+        const phone = document.getElementById('giftUserPhone').value.trim();
+        const amt = parseFloat(document.getElementById('giftAmount').value);
+        const type = document.getElementById('giftType').value;
+
+        if(!phone || !amt || amt <= 0) return alert('Enter valid phone number and amount!');
+
+        const userRef = database.ref('users/' + phone);
+        userRef.once('value').then((snapshot) => {
+            if(!snapshot.exists()) return alert('User phone number not found!');
+
+            const field = type === 'bonus' ? 'bonus' : 'balance';
+            userRef.child(field).transaction((curr) => {
+                return (curr || 0) + amt;
+            }).then(() => {
+                alert(`Successfully gifted $${amt.toFixed(2)} USDT to ${phone}!`);
+                document.getElementById('giftUserPhone').value = '';
+                document.getElementById('giftAmount').value = '';
             });
-        }
+        });
     }
 
+    // 🔵 Activate / 🔴 Deactivate User
+    function setUserStatus(status) {
+        const phone = document.getElementById('targetUserPhone').value.trim();
+        if(!phone) return alert('Enter user phone number!');
+
+        database.ref('users/' + phone).once('value').then((snapshot) => {
+            if(!snapshot.exists()) return alert('User not found!');
+
+            database.ref('users/' + phone + '/status').set(status).then(() => {
+                alert(`User ${phone} status changed to ${status}`);
+                document.getElementById('targetUserPhone').value = '';
+            });
+        });
+    }
+
+    // Search and Direct User Edit
+    let activeSearchedPhone = null;
+    function searchUser() {
+        const phone = document.getElementById('searchUserPhone').value.trim();
+        if(!phone) return alert('Enter phone number!');
+
+        database.ref('users/' + phone).once('value').then((snapshot) => {
+            if(!snapshot.exists()) return alert('User not found!');
+            const u = snapshot.val();
+            activeSearchedPhone = phone;
+
+            document.getElementById('resName').innerText = u.name || 'N/A';
+            document.getElementById('resStatus').innerText = u.status || 'INACTIVE';
+            document.getElementById('resBalance').innerText = (u.balance || 0).toFixed(2);
+            document.getElementById('resCommission').innerText = (u.commission || 0).toFixed(2);
+            document.getElementById('resRefBy').innerText = u.referredBy || 'Direct';
+            document.getElementById('editBalanceInput').value = u.balance || 0;
+
+            document.getElementById('searchResultArea').classList.remove('hidden');
+        });
+    }
+
+    function updateUserBalance() {
+        if(!activeSearchedPhone) return;
+        const newBal = parseFloat(document.getElementById('editBalanceInput').value);
+        if(isNaN(newBal)) return alert('Enter valid balance!');
+
+        database.ref('users/' + activeSearchedPhone + '/balance').set(newBal).then(() => {
+            alert('User balance updated successfully!');
+            searchUser();
+        });
+    }
+
+    // Load and Approve/Reject Deposit & Withdrawal Requests
     function loadRequests() {
         database.ref('requests').on('value', (snapshot) => {
-            const tbody = document.getElementById('requestTable');
-            tbody.innerHTML = '';
-            const data = snapshot.val();
-            if(!data) {
-                tbody.innerHTML = '<tr><td colspan="3">No active requests found.</td></tr>';
+            const container = document.getElementById('pendingRequestsContainer');
+            container.innerHTML = '';
+
+            if(!snapshot.exists()) {
+                container.innerHTML = '<p style="font-size:12px; color:#94a3b8; text-align:center;">No pending requests found.</p>';
                 return;
             }
-            for(let id in data) {
-                const req = data[id];
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${req.username || 'User'}</td>
-                        <td>${req.message || req.type || 'N/A'}</td>
-                        <td><button class="btn-del" onclick="deleteReq('${id}')">Delete</button></td>
-                    </tr>
-                `;
+
+            snapshot.forEach(child => {
+                const reqKey = child.key;
+                const req = child.val();
+                
+                if(!req.status || req.status === 'PENDING') {
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <div class="item-header">
+                                <span>type: <b style="color:#38bdf8;">${req.type}</b></span>
+                                <span class="badge badge-pending">PENDING</span>
+                            </div>
+                            <p><b>User:</b> ${req.username || req.phone || 'N/A'}</p>
+                            <p><b>Details:</b> ${req.details}</p>
+                            <p style="font-size:10px; color:#94a3b8;">${new Date(req.timestamp).toLocaleString()}</p>
+                            <div class="action-row">
+                                <button class="btn-success" onclick="approveRequest('${reqKey}', '${req.type}', '${req.phone}', '${req.details}')">Approve</button>
+                                <button class="btn-danger" onclick="rejectRequest('${reqKey}')">Reject</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        });
+    }
+
+    // Process Referral Commission Distributions for ID Activations
+    const REF_PERCENTAGES = [1.00, 0.50, 0.30, 0.15, 0.10, 0.10, 0.08, 0.07, 0.05, 0.05];
+
+    function distributeReferralCommissions(userPhone) {
+        database.ref('users').once('value').then((snapshot) => {
+            if(!snapshot.exists()) return;
+            const allUsers = snapshot.val();
+
+            let currentPhone = userPhone;
+            for(let gen = 0; gen < 10; gen++) {
+                const u = allUsers[currentPhone];
+                if(!u || !u.referredBy || u.referredBy === 'Direct' || !allUsers[u.referredBy]) break;
+
+                const parentPhone = u.referredBy;
+                const parentUser = allUsers[parentPhone];
+
+                if(parentUser && parentUser.status === 'ACTIVE') {
+                    const commissionAmt = REF_PERCENTAGES[gen];
+
+                    // Credit Referral Commission
+                    database.ref(`users/${parentPhone}/commission`).transaction((curr) => {
+                        return (curr || 0) + commissionAmt;
+                    });
+                    database.ref(`users/${parentPhone}/balance`).transaction((curr) => {
+                        return (curr || 0) + commissionAmt;
+                    });
+                }
+
+                currentPhone = parentPhone;
             }
         });
     }
 
-    function deleteReq(id) {
-        database.ref('requests/' + id).remove();
+    function approveRequest(key, type, phone, details) {
+        database.ref('requests/' + key + '/status').set('APPROVED');
+
+        if(type === 'ID_Activation' && phone) {
+            database.ref('users/' + phone + '/status').set('ACTIVE').then(() => {
+                distributeReferralCommissions(phone);
+            });
+        } else if(type === 'Deposit' && phone) {
+            const amtMatch = details ? details.match(/Amount:\s*([\d.]+)/) : null;
+            const amt = amtMatch ? parseFloat(amtMatch[1]) : 0;
+            if(amt > 0) {
+                database.ref('users/' + phone + '/balance').transaction((curr) => {
+                    return (curr || 0) + amt;
+                });
+            }
+        } else if(type === 'Withdraw' && phone) {
+            const amtMatch = details ? details.match(/Amount:\s*([\d.]+)/) : null;
+            const amt = amtMatch ? parseFloat(amtMatch[1]) : 0;
+            if(amt > 0) {
+                database.ref('users/' + phone + '/balance').transaction((curr) => {
+                    return Math.max(0, (curr || 0) - amt);
+                });
+            }
+        }
+
+        alert('Request Approved!');
+    }
+
+    function rejectRequest(key) {
+        database.ref('requests/' + key + '/status').set('REJECTED').then(() => {
+            alert('Request Rejected.');
+        });
+    }
+
+    // Load & Review Pending Micro Jobs
+    function loadPendingJobs() {
+        database.ref('job_posts').on('value', (snapshot) => {
+            const container = document.getElementById('pendingJobsContainer');
+            container.innerHTML = '';
+
+            if(!snapshot.exists()) {
+                container.innerHTML = '<p style="font-size:12px; color:#94a3b8; text-align:center;">No job posts awaiting review.</p>';
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const job = child.val();
+                if(job.status === 'PENDING') {
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <h4 style="font-size:13px; color:#38bdf8;">${job.title}</h4>
+                            <p><b>Poster:</b> ${job.creatorName} (${job.creatorPhone})</p>
+                            <p><b>Target URL:</b> ${job.link}</p>
+                            <p><b>Reward:</b> $${parseFloat(job.reward).toFixed(2)} USDT</p>
+                            <div class="action-row">
+                                <button class="btn-success" onclick="approveJob('${job.jobId}')">Approve Job</button>
+                                <button class="btn-danger" onclick="rejectJob('${job.jobId}')">Reject Job</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        });
+    }
+
+    function approveJob(jobId) {
+        database.ref('job_posts/' + jobId + '/status').set('APPROVED').then(() => {
+            alert('Job Approved and published to marketplace!');
+        });
+    }
+
+    function rejectJob(jobId) {
+        database.ref('job_posts/' + jobId + '/status').set('REJECTED').then(() => {
+            alert('Job Post Rejected.');
+        });
+    }
+
+    // Site Settings (Notice & Banner Graphics)
+    function loadSiteSettings() {
+        database.ref('site/notice').once('value', (snapshot) => {
+            if(snapshot.exists()) document.getElementById('siteNoticeInput').value = snapshot.val();
+        });
+        database.ref('site/bannerUrl').once('value', (snapshot) => {
+            if(snapshot.exists()) document.getElementById('siteBannerInput').value = snapshot.val();
+        });
+    }
+
+    function saveSiteNotice() {
+        const txt = document.getElementById('siteNoticeInput').value.trim();
+        database.ref('site/notice').set(txt).then(() => alert('Site notice updated!'));
+    }
+
+    function saveSiteBanner() {
+        const url = document.getElementById('siteBannerInput').value.trim();
+        database.ref('site/bannerUrl').set(url).then(() => alert('Banner URL updated!'));
+    }
+
+    function adminLogout() {
+        document.getElementById('adminPanelArea').classList.add('hidden');
+        document.getElementById('adminAuthBox').classList.remove('hidden');
+        document.getElementById('adminPassInput').value = '';
     }
 </script>
 
