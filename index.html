@@ -92,6 +92,8 @@
 
     database.ref('site/notice').on('value', (snapshot) => {
         document.getElementById('liveNotice').innerText = snapshot.val() || 'Dragon Network-এ আপনাকে স্বাগতম!';
+    }, (error) => {
+        console.error("Notice load error:", error);
     });
 
     function switchTab(type) {
@@ -119,7 +121,7 @@
         }
 
         const userRef = database.ref('users/' + phone);
-        userRef.once('value', (snapshot) => {
+        userRef.once('value').then((snapshot) => {
             if(snapshot.exists()) {
                 alert('এই ফোন নম্বরে ইতিপূর্বে অ্যাকাউন্ট খোলা হয়েছে!');
             } else {
@@ -138,8 +140,12 @@
                     alert('রেজিস্ট্রেশন সফল হয়েছে! এখন লগইন করুন।');
                     switchTab('login');
                     document.getElementById('loginPhone').value = phone;
+                }).catch((err) => {
+                    alert('ডাটা সেভ করতে সমস্যা হচ্ছে: ' + err.message);
                 });
             }
+        }).catch((err) => {
+            alert('ডাটা পড়তে সমস্যা হচ্ছে: ' + err.message);
         });
     }
 
@@ -152,7 +158,7 @@
             return;
         }
 
-        database.ref('users/' + phone).once('value', (snapshot) => {
+        database.ref('users/' + phone).once('value').then((snapshot) => {
             if(snapshot.exists()) {
                 const userData = snapshot.val();
                 if(userData.pass === pass) {
@@ -164,6 +170,8 @@
             } else {
                 alert('এই নম্বরে কোনো অ্যাকাউন্ট পাওয়া যায়নি!');
             }
+        }).catch((err) => {
+            alert('লগইন করতে সমস্যা হচ্ছে: ' + err.message);
         });
     }
 
@@ -188,6 +196,8 @@
         }).then(() => {
             alert('আপনার রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
             document.getElementById('userMsg').value = '';
+        }).catch((err) => {
+            alert('রিকোয়েস্ট পাঠাতে সমস্যা হয়েছে: ' + err.message);
         });
     }
 
