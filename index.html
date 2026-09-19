@@ -69,6 +69,7 @@
         .msg-pending { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid #eab308; }
         .msg-verified { background: rgba(22, 163, 74, 0.15); color: #4ade80; border: 1px solid #16a34a; }
         .locked-card { opacity: 0.6; pointer-events: none; border: 1px solid #dc2626 !important; }
+        .job-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -158,12 +159,21 @@
 
         <!-- Tab Content Sections -->
         
-        <!-- Home / Tasks Section -->
+        <!-- Home / Tasks & Micro Jobs Section -->
         <div id="homeSection">
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-list-check" style="color:#38bdf8;"></i> Daily USDT Tasks</div>
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:12px;">Complete tasks to earn daily USDT rewards.</p>
-                <button class="btn-success" onclick="startTask()">Start Tasks</button>
+                <div class="card-title"><i class="fa-solid fa-briefcase" style="color:#38bdf8;"></i> Micro Jobs & Google Review</div>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Google Review এবং বিভিন্ন মাইক্রোজব সম্পন্ন করে প্রতিদিন সরাসরি USDT ইনকাম করুন।</p>
+                
+                <!-- Google Review Job Card -->
+                <div class="job-card">
+                    <h4 style="font-size:13px; color:#38bdf8; margin-bottom:4px;"><i class="fa-brands fa-google"></i> Google Map 5-Star Review Task</h4>
+                    <p style="font-size:11px; color:#94a3b8;">নিচের লিংকে গিয়ে ৫-স্টার রিভিও দিন এবং স্ক্রিনশট ইউআরএল জমা দিন।</p>
+                    <p style="font-size:12px; color:#4ade80; font-weight:bold; margin:6px 0;">Reward: $0.20 USDT</p>
+                    
+                    <input type="text" id="jobProof" placeholder="Enter Review Screenshot Link (Imgur/PostImage)">
+                    <button class="btn-success" style="padding:8px; font-size:12px;" onclick="submitMicroJob('Google Review 5-Star')">Submit Job Proof</button>
+                </div>
             </div>
 
             <!-- Free Extra Income VIP Telegram Group (Locked for Inactive IDs) -->
@@ -220,6 +230,9 @@
         <!-- Withdraw USDT Section -->
         <div id="withdrawSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-money-bill-transfer" style="color:#38bdf8;"></i> Withdraw USDT (BEP20)</div>
+            
+            <p style="font-size:11px; color:#f87171; margin-bottom:10px;">* নোট: উইথড্র করার জন্য আপনার আইডি অবশ্যই ACTIVE থাকতে হবে এবং পর্যাপ্ত ব্যালেন্স থাকতে হবে।</p>
+
             <input type="number" id="withAmount" placeholder="Amount (USDT)">
             <input type="text" id="withAddress" placeholder="Your USDT BEP20 Address">
             <button class="btn-success" onclick="submitWithdraw()">Request Withdrawal</button>
@@ -526,20 +539,62 @@
         });
     }
 
+    // STRICT WITHDRAWAL VALIDATION
     function submitWithdraw() {
-        const amt = document.getElementById('withAmount').value;
+        const amt = parseFloat(document.getElementById('withAmount').value);
         const addr = document.getElementById('withAddress').value.trim();
-        if(!amt || !addr) return alert('Enter withdrawal amount and BEP20 address!');
 
+        // 1. Check ID Active Status
+        if(currentUser.status !== 'ACTIVE') {
+            return alert('❌ আপনার অ্যাকাউন্ট অ্যাক্টিভ নয়! উইথড্র করতে অবশ্যই আইডি অ্যাক্টিভ থাকতে হবে।');
+        }
+
+        // 2. Check Input Validity
+        if(!amt || amt <= 0 || !addr) {
+            return alert('❌ সঠিক অ্যামাউন্ট এবং BEP20 অ্যাড্রেস প্রদান করুন!');
+        }
+
+        // 3. Check Account Balance Existence
+        const currentBalance = parseFloat(currentUser.balance || 0);
+        if(currentBalance <= 0) {
+            return alert('❌ আপনার অ্যাকাউন্টে কোনো ব্যালেন্স নেই!');
+        }
+
+        // 4. Check If Amount Exceeds Balance
+        if(amt > currentBalance) {
+            return alert(`❌ পর্যাপ্ত ব্যালেন্স নেই! আপনার বর্তমান ব্যালেন্স $${currentBalance.toFixed(2)} USDT`);
+        }
+
+        // Submit Request if all checks pass
         database.ref('requests').push({
             type: 'Withdraw',
             username: currentUser.name + " (" + currentUser.phone + ")",
             details: `Amount: ${amt} USDT | BEP20 Addr: ${addr}`,
             timestamp: Date.now()
         }).then(() => {
-            alert('Withdrawal request submitted!');
+            alert('✅ Withdrawal request submitted successfully!');
             document.getElementById('withAmount').value = '';
             document.getElementById('withAddress').value = '';
+        });
+    }
+
+    // Submit Micro Job Proof (Google Review)
+    function submitMicroJob(jobTitle) {
+        if(currentUser.status !== 'ACTIVE') {
+            return alert('❌ মাইক্রোজব সম্পন্ন করতে আগে $3 USDT দিয়ে আইডি অ্যাক্টিভ করুন!');
+        }
+
+        const proof = document.getElementById('jobProof').value.trim();
+        if(!proof) return alert('প্রুফ এর জন্য রিভিউ এর স্ক্রিনশট লিংক দিন!');
+
+        database.ref('requests').push({
+            type: 'MicroJob_Proof',
+            username: currentUser.name + " (" + currentUser.phone + ")",
+            details: `Job: ${jobTitle} | Proof: ${proof}`,
+            timestamp: Date.now()
+        }).then(() => {
+            alert('✅ Micro Job Proof Submitted! Admin will review and add reward.');
+            document.getElementById('jobProof').value = '';
         });
     }
 
@@ -555,14 +610,6 @@
             alert('Message sent to admin!');
             document.getElementById('userMsg').value = '';
         });
-    }
-
-    function startTask() {
-        if(currentUser.status !== 'ACTIVE') {
-            alert('Please activate your account with $3 USDT to start daily tasks!');
-        } else {
-            alert('Task system running. Check back daily for USDT rewards!');
-        }
     }
 
     function logout() {
