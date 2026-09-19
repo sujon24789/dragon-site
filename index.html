@@ -230,13 +230,14 @@
 
         <div id="jobPostSection" class="card hidden">
             <div class="card-title"><i class="fa-solid fa-plus-circle" style="color:#06b6d4;"></i> Create Job Post</div>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job request. Admin will review and publish it to the Micro Job marketplace.</p>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Submit your job request. Total cost = (Workers × Reward) + $0.007 tax per worker. Balance will be deducted immediately.</p>
 
             <input type="text" id="postTitle" placeholder="Job Title (e.g. Telegram Channel Join)">
             <input type="text" id="postLink" placeholder="Target Link / URL">
-            <input type="number" id="postReward" placeholder="Reward per Worker (USDT)">
+            <input type="number" id="postWorkers" placeholder="Total Workers Needed (e.g. 5)">
+            <input type="number" id="postReward" placeholder="Reward per Worker in USDT (e.g. 1)">
             <textarea id="postInstruction" rows="3" placeholder="Work Instructions / Requirements"></textarea>
-            <button class="btn-success" onclick="submitJobPost()">Submit Job Post for Approval</button>
+            <button class="btn-success" onclick="submitJobPost()">Submit Job Post & Pay</button>
         </div>
 
         <div id="myPostedJobsSection" class="card hidden">
@@ -576,7 +577,7 @@
             vipCard.classList.remove('locked-card');
             vipLockedMsg.classList.add('hidden');
             vipTgLink.classList.remove('hidden');
-        } else if(currentUser.status === 'PENDING') {
+        } else if(currentUser.activationRequest === 'PENDING') {
             statusElem.innerText = 'PENDING';
             statusElem.className = 'status-badge status-pending';
             actForm.classList.add('hidden');
@@ -713,32 +714,55 @@
         if(btnElem) btnElem.classList.add('active');
     }
 
+    // Submit Job Post with Immediate Balance Deduction (Including $0.007 tax per worker)
     function submitJobPost() {
         const title = document.getElementById('postTitle').value.trim();
         const link = document.getElementById('postLink').value.trim();
+        const workers = parseInt(document.getElementById('postWorkers').value);
         const reward = parseFloat(document.getElementById('postReward').value);
         const instruction = document.getElementById('postInstruction').value.trim();
 
-        if(!title || !link || !reward) return alert('Please fill in Job Title, Link, and Reward!');
+        if(!title || !link || !workers || !reward || workers <= 0 || reward <= 0) {
+            return alert('Please fill in all job details correctly!');
+        }
+
+        // Total Cost Calculation: (Workers * Reward) + (Workers * 0.007 Tax)
+        const totalCost = (workers * reward) + (workers * 0.007);
+        const currentBal = parseFloat(currentUser.balance || 0);
+
+        if(currentBal < totalCost) {
+            return alert(`Insufficient Balance! Total required cost is $${totalCost.toFixed(3)} USDT (including $0.007 tax/worker). Your balance is $${currentBal.toFixed(2)} USDT.`);
+        }
 
         const jobId = database.ref('job_posts').push().key;
 
-        database.ref('job_posts/' + jobId).set({
-            jobId: jobId,
-            creatorPhone: currentUser.phone,
-            creatorName: currentUser.name,
-            title: title,
-            link: link,
-            reward: reward,
-            instruction: instruction || 'N/A',
-            status: 'PENDING',
-            createdAt: Date.now()
+        // Deduct balance from user account immediately upon pending submission
+        database.ref('users/' + currentUser.phone + '/balance').transaction((curr) => {
+            return (curr || 0) - totalCost;
         }).then(() => {
-            alert('Job post submitted for Admin approval!');
-            document.getElementById('postTitle').value = '';
-            document.getElementById('postLink').value = '';
-            document.getElementById('postReward').value = '';
-            document.getElementById('postInstruction').value = '';
+            database.ref('job_posts/' + jobId).set({
+                jobId: jobId,
+                creatorPhone: currentUser.phone,
+                creatorName: currentUser.name,
+                title: title,
+                link: link,
+                workers: workers,
+                reward: reward,
+                totalCost: totalCost,
+                instruction: instruction || 'N/A',
+                status: 'PENDING',
+                createdAt: Date.now()
+            }).then(() => {
+                alert(`Job submitted successfully! $${totalCost.toFixed(3)} USDT deducted from your balance. Waiting for admin approval.`);
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postLink').value = '';
+                document.getElementById('postWorkers').value = '';
+                document.getElementById('postReward').value = '';
+                document.getElementById('postInstruction').value = '';
+                showSection('myPostedJobsSection');
+            });
+        }).catch(err => {
+            alert('Error processing balance deduction: ' + err.message);
         });
     }
 
@@ -810,6 +834,7 @@
                 const job = child.val();
                 let statusBadge = `<span style="color:#facc15;">[PENDING ADMIN REVIEW]</span>`;
                 if(job.status === 'APPROVED') statusBadge = `<span style="color:#4ade80;">[APPROVED & LIVE]</span>`;
+                else if(job.status === 'REJECTED') statusBadge = `<span style="color:#f87171;">[REJECTED & REFUNDED]</span>`;
 
                 let proofsHtml = '';
                 if(job.proofs) {
@@ -837,7 +862,7 @@
                 container.innerHTML += `
                     <div class="job-card">
                         <h4 style="font-size:13px; color:#38bdf8;">${job.title} ${statusBadge}</h4>
-                        <p style="font-size:11px; color:#94a3b8;">Reward per worker: $${parseFloat(job.reward).toFixed(2)} USDT</p>
+                        <p style="font-size:11px; color:#94a3b8;">Cost: $${parseFloat(job.totalCost || 0).toFixed(3)} USDT | Reward/Worker: $${parseFloat(job.reward).toFixed(2)}</p>
                         <h5 style="font-size:12px; color:#fff; margin-top:8px;">Submitted Proofs:</h5>
                         ${proofsHtml}
                     </div>
