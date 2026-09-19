@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👑 Dragon Admin Control Panel</title>
+    <title>👑 Dragon Admin Control Panel (2FA Secured)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Otpauth JS for Google Authenticator TOTP verification -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0b0f19; color: #f8fafc; padding-bottom: 50px; }
@@ -38,21 +40,47 @@
         .hidden { display: none !important; }
         .action-row { display: flex; gap: 8px; margin-top: 8px; }
         .action-row button { padding: 8px; font-size: 12px; margin: 0; }
+        .qr-box { text-align: center; margin: 15px 0; background: #fff; padding: 15px; border-radius: 10px; display: inline-block; width: 100%; }
+        .qr-box img { width: 180px; height: 180px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="adminAuthBox" class="card" style="margin-top: 50px;">
+    <!-- Step 1: Password Login -->
+    <div id="adminAuthBox" class="card" style="margin-top: 40px;">
         <div class="card-title"><i class="fa-solid fa-lock"></i> Admin Authentication</div>
         <input type="password" id="adminPassInput" placeholder="Enter Admin Secret Password">
-        <button onclick="checkAdminAuth()">Login to Admin Panel</button>
+        <button onclick="verifyAdminPassword()">Next (2FA Verification)</button>
+    </div>
+
+    <!-- Step 2: Google Authenticator 2FA Verification Box -->
+    <div id="admin2FABox" class="card hidden" style="margin-top: 40px;">
+        <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Google Authenticator 2FA</div>
+        <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Open your Google Authenticator app and enter the 6-digit code.</p>
+        <input type="text" id="adminOtpInput" placeholder="Enter 6-Digit Authenticator Code" maxlength="6" style="text-align:center; font-size:18px; letter-spacing:4px;">
+        <button class="btn-success" onclick="verifyAdminOTP()">Verify & Login</button>
+        <button style="background:#334155; font-size:12px; margin-top:5px;" onclick="backToLogin()">Back</button>
+    </div>
+
+    <!-- First-time 2FA Setup Modal/Box -->
+    <div id="setup2FABox" class="card hidden" style="margin-top: 20px; border: 2px dashed #38bdf8;">
+        <div class="card-title"><i class="fa-solid fa-qrcode"></i> Setup Google Authenticator (First Time)</div>
+        <p style="font-size:12px; color:#94a3b8;">Scan this QR Code with your Google Authenticator app, or save the Secret Key manually:</p>
+        
+        <div class="qr-box">
+            <div id="qrcode"></div>
+        </div>
+        <p style="font-size:11px; color:#38bdf8; word-break:break-all; text-align:center;">Secret Key: <b id="secretKeyText"></b></p>
+
+        <input type="text" id="setupOtpInput" placeholder="Enter 6-Digit Code to Confirm Setup" maxlength="6" style="text-align:center; font-size:16px;">
+        <button class="btn-success" onclick="saveAndVerify2FASecret()">Save & Enable 2FA</button>
     </div>
 
     <div id="adminPanelArea" class="hidden">
         <div class="header">
             <h2>👑 DRAGON ADMIN CONTROL PANEL</h2>
-            <p>Welcome back, Master Admin!</p>
+            <p>Welcome back, Master Admin! (2FA Secured)</p>
         </div>
 
         <div class="stats-grid">
@@ -170,6 +198,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<!-- QRCode generator library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
     const firebaseConfig = {
@@ -186,14 +216,103 @@
     const database = firebase.database();
     const ADMIN_PASS = "dragon2026";
 
-    function checkAdminAuth() {
+    let tempSecret = null;
+
+    function verifyAdminPassword() {
         if(document.getElementById('adminPassInput').value.trim() === ADMIN_PASS) {
             document.getElementById('adminAuthBox').classList.add('hidden');
-            document.getElementById('adminPanelArea').classList.remove('hidden');
-            initAdminDashboard();
+            
+            // Check if 2FA secret exists in Firebase
+            database.ref('admin/totpSecret').once('value').then((snapshot) => {
+                if(snapshot.exists()) {
+                    // 2FA already configured, ask for OTP code
+                    document.getElementById('admin2FABox').classList.remove('hidden');
+                } else {
+                    // First time setup: generate new secret and show QR code
+                    let secret = new OTPAuth.Secret({ size: 20 });
+                    tempSecret = secret.base32;
+                    
+                    document.getElementById('secretKeyText').innerText = tempSecret;
+                    document.getElementById('qrcode').innerHTML = "";
+                    
+                    let totp = new OTPAuth.TOTP({
+                        issuer: "DragonNetwork",
+                        label: "Admin",
+                        algorithm: "SHA1",
+                        digits: 6,
+                        period: 30,
+                        secret: tempSecret
+                    });
+
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: totp.toString(),
+                        width: 180,
+                        height: 180
+                    });
+
+                    document.getElementById('setup2FABox').classList.remove('hidden');
+                }
+            });
         } else {
             alert('Invalid Secret Admin Password!');
         }
+    }
+
+    function saveAndVerify2FASecret() {
+        const token = document.getElementById('setupOtpInput').value.trim();
+        let totp = new OTPAuth.TOTP({
+            issuer: "DragonNetwork",
+            label: "Admin",
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: tempSecret
+        });
+
+        let delta = totp.validate({ token: token, window: 1 });
+        if (delta !== null) {
+            database.ref('admin/totpSecret').set(tempSecret).then(() => {
+                alert('Google Authenticator 2FA Enabled Successfully!');
+                document.getElementById('setup2FABox').classList.add('hidden');
+                document.getElementById('adminPanelArea').classList.remove('hidden');
+                initAdminDashboard();
+            });
+        } else {
+            alert('Invalid 6-digit verification code! Please try again.');
+        }
+    }
+
+    function verifyAdminOTP() {
+        const token = document.getElementById('adminOtpInput').value.trim();
+        
+        database.ref('admin/totpSecret').once('value').then((snapshot) => {
+            if(!snapshot.exists()) return alert('2FA not configured!');
+            
+            let savedSecret = snapshot.val();
+            let totp = new OTPAuth.TOTP({
+                issuer: "DragonNetwork",
+                label: "Admin",
+                algorithm: "SHA1",
+                digits: 6,
+                period: 30,
+                secret: savedSecret
+            });
+
+            let delta = totp.validate({ token: token, window: 1 });
+            if (delta !== null) {
+                document.getElementById('admin2FABox').classList.add('hidden');
+                document.getElementById('adminPanelArea').classList.remove('hidden');
+                initAdminDashboard();
+            } else {
+                alert('Incorrect Authenticator Code!');
+            }
+        });
+    }
+
+    function backToLogin() {
+        document.getElementById('admin2FABox').classList.add('hidden');
+        document.getElementById('adminAuthBox').classList.remove('hidden');
+        document.getElementById('adminPassInput').value = '';
     }
 
     function initAdminDashboard() {
@@ -402,14 +521,12 @@
             }
             alert('Deposit Request Approved!');
         } else if(type === 'Withdraw') {
-            // Withdrawal amount was already deducted when requested, so approval just finalizes it
             alert('Withdrawal Request Approved!');
         } else {
             alert('Request Approved!');
         }
     }
 
-    // Admin rejects request (For Withdraw: refunds the deducted amount back to user's balance)
     function rejectRequest(key, type, phone, details, explicitAmt) {
         database.ref('requests/' + key + '/status').set('REJECTED');
 
